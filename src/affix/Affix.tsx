@@ -1,6 +1,6 @@
 import React, { useState, useEffect, forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 import isFunction from 'lodash/isFunction';
-import { StyledProps , ScrollContainerElement } from '../common';
+import { StyledProps, ScrollContainerElement } from '../common';
 import { TdAffixProps } from './type';
 import { getScrollContainer } from '../_util/dom';
 import useConfig from '../_util/useConfig';
@@ -21,7 +21,7 @@ interface RefProps {
 }
 
 const Affix = forwardRef<RefProps, AffixProps>((props, ref) => {
-  const { children, container = () => window, offsetBottom, offsetTop, onFixedChange } = props;
+  const { children, container = () => window, offsetBottom, offsetTop, zIndex = 500, onFixedChange } = props;
 
   const [affixed, setAffixed] = useState<boolean>(false);
   const { classPrefix } = useConfig();
@@ -57,6 +57,7 @@ const Affix = forwardRef<RefProps, AffixProps>((props, ref) => {
           affixEl.className = `${classPrefix}-affix`;
           affixEl.style.top = `${fixedTop}px`;
           affixEl.style.width = `${oldWidth}px`;
+          affixEl.style.zIndex = `${zIndex}`;
         } else {
           affixEl.removeAttribute('class');
           affixEl.removeAttribute('style');
@@ -67,7 +68,7 @@ const Affix = forwardRef<RefProps, AffixProps>((props, ref) => {
       });
     }
     stateRef.current.ticking = true;
-  }, [classPrefix, offsetBottom, offsetTop, onFixedChange]);
+  }, [classPrefix, offsetBottom, offsetTop, onFixedChange, zIndex]);
 
   const calcInitValue = useCallback(() => {
     const scrollContainer = getScrollContainer(container);
