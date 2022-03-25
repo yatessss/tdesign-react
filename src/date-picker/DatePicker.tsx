@@ -1,453 +1,194 @@
-import React, { useState, useRef, useEffect } from 'react';
-import isObject from 'lodash/isObject';
-import isDate from 'lodash/isDate';
-import isArray from 'lodash/isArray';
-import isString from 'lodash/isString';
-import dayjs from 'dayjs';
-import isBetween from 'dayjs/plugin/isBetween';
+import React, { forwardRef } from 'react';
 import classNames from 'classnames';
-import { TimeIcon as IconTime, CalendarIcon as IconCalendar } from 'tdesign-icons-react';
-import { useLocaleReceiver } from '../locale/LocalReceiver';
+import dayjs from 'dayjs';
+// import { useLocaleReceiver } from '../locale/LocalReceiver';
 import useConfig from '../_util/useConfig';
 import { StyledProps } from '../common';
-import { TdDatePickerProps, DateValue, PickContext } from './type';
-import useCommonClassName from '../_util/useCommonClassName';
-import useClickOutside from '../_util/useClickOutside';
-
-import Popup from '../popup';
-import Input from '../input';
-import Button from '../button';
-import CalendarPresets from './base/CalendarPresets';
-import DatePanel from './panel/Date';
-import DateRangePanel from './panel/DateRange';
-import TimePickerPanel from '../time-picker/panel/TimePickerPanel';
-import TimePickerRangePanel from '../time-picker/panel/TimePickerRangePanel';
-
-dayjs.extend(isBetween);
+import { TdDatePickerProps } from './type';
+import SelectInput from '../select-input';
+import DatePanel from './panel/DatePanel';
+import useSingle from './hooks/useSingle';
+import { subtractMonth, addMonth } from '../_common/js/date-picker/utils-new';
 
 export interface DatePickerProps extends TdDatePickerProps, StyledProps {}
 
-const TIME_FORMAT = 'HH:mm:ss';
-
-// TODO 下版本重构下 datepicker 逻辑，与 RangePicker 一起实现
-const DatePicker = (props: DatePickerProps) => {
-  // 国际化文本初始化
-  const [local, t] = useLocaleReceiver('datePicker');
-  const selectTimeText = t(local.selectTime);
-  const selectDateText = t(local.selectDate);
-  const confirmText = t(local.confirm);
-  const rangeSeparatorText = t(local.rangeSeparator);
+const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>((props, ref) => {
+  const { classPrefix, datePicker: globalDatePickerConfig } = useConfig();
 
   const {
     className,
     style,
-    allowInput,
-    clearable,
     disabled,
-    disableDate,
-    enableTimePicker,
-    format = 'YYYY-MM-DD',
-    inputProps,
     mode = 'month',
-    popupProps,
-    prefixIcon,
+    enableTimePicker,
+    disableDate,
+    firstDayOfWeek = globalDatePickerConfig.firstDayOfWeek,
     presets,
-    range,
-    size = 'medium',
-    suffixIcon,
-    value,
-    defaultValue,
-    firstDayOfWeek,
-    placeholder = t(local.placeholder[mode]),
-    onChange,
-    onPick,
-    // onBlur,
-    // onFocus,
-    // onInput,
+    timePickerProps,
+    format = 'YYYY-MM-DD',
   } = props;
 
-  const { classPrefix } = useConfig();
-  const CLASSNAMES = useCommonClassName();
+  const {
+    inputValue,
+    popupVisible,
+    inputProps,
+    popupProps,
+    value,
+    year,
+    month,
+    timeValue,
+    inputRef,
+    onChange,
+    setIsHoverCell,
+    setInputValue,
+    setPopupVisible,
+    setTimeValue,
+    formatDate,
+    setYear,
+    setMonth,
+  } = useSingle(props);
 
-  const datePickerRef = useRef(null);
-  const dropdownPopupRef = useRef(null);
-  const inputRef = useRef(null);
-
-  const [popupShow, setPopupShow] = useState(false);
-  const [timePanelShow, setTimePanelShow] = useState(false);
-  const [timeValue, setTimeValue] = useState('');
-  const [timeRangeValue, setTimeRangeValue] = useState([]);
-  const [start, setStart] = useState(new Date());
-  const [end, setEnd] = useState(new Date());
-  const [formattedValue, setFormattedValue] = useState('');
-  const [selectedDates, setSelectedDates] = useState([]);
-
-  const isControlled = typeof value !== 'undefined';
-
-  function isValidDate(date: string | number | Date | (string | number | Date)[]) {
-    if (isArray(date) && isDate(new Date(date[0])) && isDate(new Date(date[1]))) return true;
-    if (isString(date) && isDate(new Date(date))) return true;
-    return false;
+  // 日期 hover
+  function onCellMouseEnter(date: Date) {
+    setIsHoverCell(true);
+    setInputValue(formatDate(date));
   }
 
-  function initDatePicker() {
-    const val: any = value || defaultValue;
-    if (val && isValidDate(val)) {
-      const startVal = range ? new Date(val[0]) : new Date(val);
-      const endVal = range ? new Date(val[1]) : new Date(val);
-
-      setStart(startVal);
-      setEnd(endVal);
-      setTimeValue(dayjs(startVal).format(TIME_FORMAT));
-      setTimeRangeValue([dayjs(startVal).format(TIME_FORMAT), dayjs(endVal).format(TIME_FORMAT)]);
-      setSelectedDates(range ? [val[0], val[1]] : [val]);
-    }
+  // 日期 leave
+  function onCellMouseLeave() {
+    setIsHoverCell(false);
+    setInputValue(formatDate(value));
   }
 
-  useClickOutside([datePickerRef, dropdownPopupRef], () => {
-    close();
-  });
+  // 日期点击
+  function onCellClick(date: Date) {
+    setIsHoverCell(false);
+    onChange(formatDate(date, 'valueType'), dayjs(date));
+    !enableTimePicker && setPopupVisible(false);
+  }
 
-  useEffect(() => {
-    initDatePicker();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // 头部快速切换
+  function onJumperClick(flag: number) {
+    const monthCountMap = { date: 1, month: 12, year: 120 };
+    const monthCount = monthCountMap[mode] || 0;
 
-  useEffect(() => {
-    updateFormatValue();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDates, value]);
+    const current = new Date(year, month);
 
-  function updateFormatValue() {
-    let dates = selectedDates;
-
-    // 受控模式
-    if (isControlled) {
-      if (Array.isArray(value)) {
-        dates = value.map((d: string) => (d ? new Date(d) : new Date()));
-      } else {
-        dates = value ? [new Date(value)] : [];
-      }
+    let next = null;
+    if (flag === -1) {
+      next = subtractMonth(current, monthCount);
+    } else if (flag === 0) {
+      next = new Date();
+    } else if (flag === 1) {
+      next = addMonth(current, monthCount);
     }
 
-    const selectedFmtDates: string[] = dates.map((d: Date) => formatDate(d));
+    const nextYear = next.getFullYear();
+    const nextMonth = next.getMonth();
+    const nextInputValue = formatDate(
+      dayjs(inputValue || new Date())
+        .year(nextYear)
+        .month(nextMonth)
+        .toDate(),
+    );
 
-    let pickerMode: string = mode;
-    if (range) pickerMode = 'range';
-    let nextValue = '';
-
-    switch (pickerMode) {
-      case 'date':
-      case 'month':
-      case 'year':
-        dates[0] && setStart(new Date(dates[0]));
-        nextValue = selectedFmtDates.join('');
-        break;
-      case 'range':
-        if (selectedFmtDates.length > 1) {
-          setStart(new Date(dates[0]));
-          setEnd(new Date(dates[1]));
-          nextValue = [selectedFmtDates[0], selectedFmtDates[1]].join(rangeSeparatorText);
-        }
-        break;
-    }
-
-    setFormattedValue(nextValue);
+    setInputValue(nextInputValue);
   }
 
-  function showPopup() {
-    if (disabled) return;
-    setPopupShow(true);
+  // timepicker 点击
+  function onTimePickerChange(val: string) {
+    const [hour, minute, second, millisecond] = val.split(':');
+    const currentDate = dayjs(inputValue)
+      .hour(+hour)
+      .minute(+minute)
+      .second(+second)
+      .millisecond(+millisecond)
+      .toDate();
+    setTimeValue(val);
+    setInputValue(formatDate(currentDate));
   }
 
-  function formatDate(date: Date): string {
-    let dateFormat = format || '';
-    const arrTime = ['H', 'h', 'm', 's'];
-    const hasTime = arrTime.some((f) => String(dateFormat).includes(f));
-    if (enableTimePicker && !hasTime) {
-      dateFormat = [dateFormat, TIME_FORMAT].join(' ');
-    }
-    const d1 = new Date(date);
-    return dayjs(d1).format(dateFormat);
-  }
+  // 确定
+  function onConfirmClick() {
+    setPopupVisible(false);
 
-  function close() {
-    if (disabled) return;
-
-    setPopupShow(false);
-    setTimePanelShow(false);
-  }
-
-  function handleClear({ e }): void {
-    e.stopPropagation();
-    close();
-
-    if (!disabled) {
-      setStart(new Date());
-      setEnd(new Date());
-      setSelectedDates([]);
-      setFormattedValue('');
-      setTimeValue('00:00:00');
-      setTimeRangeValue(['00:00:00', '00:00:00']);
-      submitInput([], true);
-    }
-  }
-
-  function submitInput(selectedDates: any[], triggerChange = true) {
-    const pickerMode = range ? 'range' : mode;
-
-    switch (pickerMode) {
-      case 'date':
-      case 'month':
-      case 'year':
-        triggerChange && onChange?.(selectedDates[0]);
-        break;
-      case 'range':
-        triggerChange && onChange?.(selectedDates);
-        break;
-    }
-  }
-
-  function clickRange(value) {
-    const nextDates = [];
-    if (Array.isArray(value)) {
-      nextDates.push(...[dayjs(value[0]).toDate(), dayjs(value[1]).toDate()]);
-
-      setStart(nextDates[0]);
-      setEnd(nextDates[1]);
+    const isValidDate = dayjs(inputValue, format, true).isValid();
+    if (isValidDate) {
+      onChange(formatDate(inputValue, 'valueType'), dayjs(inputValue));
     } else {
-      nextDates.push(dayjs(value).toDate());
-
-      setStart(nextDates[0]);
-      setEnd(nextDates[0]);
-    }
-    setSelectedDates(nextDates);
-    clickedApply(!enableTimePicker, nextDates);
-  }
-
-  function clickedApply(closePicker = true, nextDates?: Date[]): void {
-    const dates = nextDates || selectedDates;
-    submitInput(
-      dates.map((d: Date) => formatDate(d)),
-      true,
-    );
-
-    closePicker && close();
-  }
-
-  function toggleTime() {
-    setTimeValue(dayjs(start).format(TIME_FORMAT));
-    setTimeRangeValue([dayjs(start).format(TIME_FORMAT), dayjs(end).format(TIME_FORMAT)]);
-    setTimePanelShow(!timePanelShow);
-  }
-
-  function handleTimePick(value: any) {
-    if (Array.isArray(value)) {
-      const [startTime, endTime] = value;
-      const [startHour, startMinute, startSecond] = startTime.split(':');
-      const startDate = new Date(start);
-      startDate.setHours(startHour);
-      startDate.setMinutes(startMinute);
-      startDate.setSeconds(startSecond);
-
-      const [endHour, endMinute, endSecond] = endTime.split(':');
-      const endDate = new Date(end);
-      endDate.setHours(endHour);
-      endDate.setMinutes(endMinute);
-      endDate.setSeconds(endSecond);
-      setTimeRangeValue(value);
-      clickRange([startDate, endDate]);
-    } else {
-      const [hour, minute, second] = value.split(':');
-      const startDate = new Date(start);
-      startDate.setHours(hour);
-      startDate.setMinutes(minute);
-      startDate.setSeconds(second);
-      setTimeValue(value);
-      dateClick(startDate);
+      setInputValue(formatDate(value));
     }
   }
 
-  function dateClick(value: Date | Date[]) {
-    // @todo add year range and month range
-    let pickerMode: string = mode;
-    if (range) pickerMode = 'range';
-
-    switch (pickerMode) {
-      case 'year':
-      case 'month':
-      case 'date': {
-        if (value instanceof Date) {
-          if (!isControlled) {
-            setStart(value);
-            setEnd(value);
-          }
-          setSelectedDates([value]);
-          // 有时间选择时，点击日期不关闭弹窗
-          clickedApply(!enableTimePicker, [value]);
-        }
-        break;
-      }
-      case 'range': {
-        if (Array.isArray(value)) {
-          if (!isControlled) {
-            setStart(value[0]);
-            setEnd(value[1]);
-          }
-          setSelectedDates(value);
-          // 有时间选择时，点击日期不关闭弹窗
-          clickedApply(!enableTimePicker, value);
-        }
-        break;
-      }
+  // 预设
+  function onPresetClick(preset: any) {
+    let presetValue = preset;
+    if (typeof preset === 'function') {
+      presetValue = preset();
     }
+    setPopupVisible(false);
+    onChange(formatDate(presetValue, 'valueType'), dayjs(presetValue));
   }
 
-  function isEnabled(value: Date): boolean {
-    if (!disableDate) return true;
-
-    let isEnabled = true;
-    // 值类型为 Function 则表示返回值为 true 的日期会被禁用
-    if (typeof disableDate === 'function') {
-      return !disableDate(value);
-    }
-
-    // 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。
-    if (Array.isArray(disableDate)) {
-      let isIncludes = false;
-      const formatedDisabledDate = disableDate.map((item: string) => dayjs(item, format));
-      formatedDisabledDate.forEach((item) => {
-        if (item.isSame(dayjs(value))) {
-          isIncludes = true;
-        }
-      });
-      return !isIncludes;
-    }
-
-    // { from: 'A', to: 'B' } 表示在 A 到 B 之间的日期会被禁用。
-    const { from, to, before, after } = disableDate;
-    if (from && to) {
-      const compareMin = dayjs(new Date(from));
-      const compareMax = dayjs(new Date(to));
-
-      return !dayjs(value).isBetween(compareMin, compareMax, mode, '[]');
-    }
-
-    const min = before ? new Date(before) : null;
-    const max = after ? new Date(after) : null;
-
-    // { before: 'A', after: 'B' } 表示在 A 之前和在 B 之后的日期都会被禁用。
-    if (max && min) {
-      const compareMin = dayjs(new Date(min));
-      const compareMax = dayjs(new Date(max));
-
-      isEnabled = dayjs(value).isBetween(compareMin, compareMax, mode, '[]');
-    } else if (min) {
-      const compareMin = dayjs(new Date(min));
-      isEnabled = !dayjs(value).isBefore(compareMin, mode);
-    } else if (max) {
-      const compareMax = dayjs(new Date(max));
-      isEnabled = !dayjs(value).isAfter(compareMax, mode);
-    }
-    return isEnabled;
-  }
-
-  function renderContent() {
-    const pickerStyles = classNames(`${classPrefix}-date-picker__container`, {
-      [`${classPrefix}-date-picker--open`]: popupShow,
-      [`${classPrefix}-date-picker--range`]: range,
-    });
-
-    const panelProps = {
-      mode,
-      firstDayOfWeek: firstDayOfWeek === undefined ? 1 : firstDayOfWeek,
-      onChange: dateClick,
-      disableDate: (d: Date) => !isEnabled(d),
-      minDate: isObject(disableDate) && 'before' in disableDate ? new Date(disableDate.before) : null,
-      maxDate: isObject(disableDate) && 'after' in disableDate ? new Date(disableDate.after) : null,
-    };
-
-    const handlePick = (date: DateValue, context: PickContext) => {
-      onPick?.(date, context);
-    };
-
-    const panelComponent = range ? (
-      <DateRangePanel {...panelProps} onPick={handlePick} value={[start, end]} />
-    ) : (
-      <DatePanel {...panelProps} value={start} />
-    );
-
-    const timepickerComponent = range ? (
-      <TimePickerRangePanel value={timeRangeValue} onChange={handleTimePick} />
-    ) : (
-      <TimePickerPanel value={timeValue} onChange={handleTimePick} />
-    );
-
-    return (
-      <div ref={dropdownPopupRef} className={pickerStyles}>
-        {enableTimePicker && timePanelShow && <div>{timepickerComponent}</div>}
-        {!timePanelShow && panelComponent}
-        {(!!presets || enableTimePicker) && (
-          <div className={`${classPrefix}-date-picker__footer`}>
-            <CalendarPresets presets={presets} onClickRange={clickRange} />
-            {enableTimePicker && (
-              <div className={`${classPrefix}-date-picker--apply`}>
-                {enableTimePicker && (
-                  <Button theme="primary" variant="text" onClick={toggleTime}>
-                    {timePanelShow ? selectDateText : selectTimeText}
-                  </Button>
-                )}
-                {
-                  <Button theme="primary" onClick={() => clickedApply(true)}>
-                    {confirmText}
-                  </Button>
-                }
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+  function onYearChange(year: number) {
+    setYear(year);
+    setInputValue(
+      formatDate(
+        dayjs(inputValue || new Date())
+          .year(year)
+          .toDate(),
+      ),
     );
   }
 
-  const triggerClassName = classNames(`${classPrefix}-form-controls`, { [CLASSNAMES.STATUS.active]: popupShow });
-  const defaultSuffixIcon = enableTimePicker ? <IconTime /> : <IconCalendar />;
-  const datePickerClassName = classNames(`${classPrefix}-date-picker`, className, CLASSNAMES.SIZE[size], {
-    [`${classPrefix}-date-picker--month-picker`]: mode === 'year' || mode === 'month',
-  });
+  function onMonthChange(month: number) {
+    setMonth(month);
+    setInputValue(
+      formatDate(
+        dayjs(inputValue || new Date())
+          .month(month)
+          .toDate(),
+      ),
+    );
+  }
+
+  const panelProps = {
+    value,
+    year,
+    month,
+    mode,
+    format,
+    presets,
+    timeValue,
+    disableDate,
+    firstDayOfWeek,
+    timePickerProps,
+    enableTimePicker,
+    onCellClick,
+    onCellMouseEnter,
+    onCellMouseLeave,
+    onJumperClick,
+    onConfirmClick,
+    onPresetClick,
+    onYearChange,
+    onMonthChange,
+    onTimePickerChange,
+    onClick: () => inputRef.current?.focus?.(),
+  };
 
   return (
-    <div className={datePickerClassName} ref={datePickerRef} style={style}>
-      <Popup
-        trigger="context-menu"
-        placement="bottom-left"
-        visible={popupShow}
-        content={renderContent()}
-        overlayClassName={`${classPrefix}-date-picker`}
-        className={`${classPrefix}-date-picker__popup-reference`}
-        expandAnimation={true}
-        destroyOnClose={true}
-        {...popupProps}
-      >
-        <div className={triggerClassName} onClick={showPopup}>
-          <Input
-            ref={inputRef}
-            size={size}
-            value={formattedValue}
-            disabled={disabled}
-            clearable={clearable}
-            placeholder={placeholder}
-            readonly={!allowInput}
-            onClear={handleClear}
-            prefixIcon={prefixIcon}
-            suffixIcon={suffixIcon || defaultSuffixIcon}
-            {...inputProps}
-          />
-        </div>
-      </Popup>
+    <div className={classNames(`${classPrefix}-date-picker`, className)} style={style} ref={ref}>
+      <SelectInput
+        disabled={disabled}
+        value={inputValue}
+        popupProps={popupProps}
+        inputProps={inputProps}
+        popupVisible={popupVisible}
+        panel={<DatePanel {...panelProps} />}
+      />
     </div>
   );
-};
+});
 
 DatePicker.displayName = 'DatePicker';
 

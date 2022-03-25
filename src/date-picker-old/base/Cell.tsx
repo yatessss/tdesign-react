@@ -54,12 +54,14 @@ const DatePickerCell = (props: DatePickerCellProps) => {
   }
 
   function handleMouseEnter() {
-    !disabled && onMouseEnter?.(value);
+    onMouseEnter?.(value);
   }
 
   return (
-    <td className={cellClass} onClick={handleClick} onMouseEnter={handleMouseEnter}>
-      <div className={`${classPrefix}-date-picker__cell-inner`}>{text}</div>
+    <td className={cellClass}>
+      <div className={`${classPrefix}-date-picker__cell-wrapper`} onClick={handleClick} onMouseEnter={handleMouseEnter}>
+        <span className={`${classPrefix}-date-picker__cell-text`}>{text}</span>
+      </div>
     </td>
   );
 };
