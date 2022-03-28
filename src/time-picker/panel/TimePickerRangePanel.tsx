@@ -7,7 +7,8 @@ import SinglePanel, { SinglePanelProps } from './SinglePanel';
 import useConfig from '../../_util/useConfig';
 import Button from '../../button';
 
-import { DEFAULT_STEPS, DEFAULT_FORMAT, useTimePickerTextConfig } from '../const';
+import { useTimePickerTextConfig } from '../const';
+import { DEFAULT_STEPS, DEFAULT_FORMAT } from '../../_common/js/time-picker/const';
 
 import { TdTimeRangePickerProps, TimeRangeValue } from '../type';
 

@@ -8,10 +8,10 @@ import range from 'lodash/range';
 import useConfig from '../../_util/useConfig';
 import noop from '../../_util/noop';
 
-import { TdTimePickerProps } from '../type';
-import { EPickerCols } from '../interfaces';
+import { useTimePickerTextConfig } from '../const';
+import { MERIDIEM_LIST, AM, PM, EPickerCols } from '../../_common/js/time-picker/const';
 
-import { MERIDIEM_LIST, AM, PM, useTimePickerTextConfig } from '../const';
+import { TdTimePickerProps } from '../type';
 
 const timeArr = [EPickerCols.hour, EPickerCols.minute, EPickerCols.second];
 
@@ -33,12 +33,10 @@ const SinglePanel: FC<SinglePanelProps> = (props) => {
   const dayjsValue = useMemo(() => {
     const isStepsSet = !!steps.filter((v) => v > 1).length;
 
-    if (value) {
-      return dayjs(value, format);
-    }
-    if (isStepsSet) {
-      return dayjs().hour(0).minute(0).second(0);
-    }
+    if (value) return dayjs(value, format);
+
+    if (isStepsSet) return dayjs().hour(0).minute(0).second(0);
+
     return dayjs();
   }, [value, format, steps]);
 
