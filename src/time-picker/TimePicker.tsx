@@ -82,15 +82,15 @@ const TimePicker = forwardRefWithStatics(
           value={value ?? undefined}
           clearable={clearable}
           onClear={handleClear}
-          placeholder={!value ? placeholder : undefined}
           className={inputClasses}
           allowInput={allowInput}
           suffixIcon={<TimeIcon />}
           popupVisible={isPanelShowed}
           onBlur={onBlur}
           onFocus={onFocus}
-          onPopupVisibleChange={handleShowPopup}
           onInputChange={handleInputChange}
+          onPopupVisibleChange={handleShowPopup}
+          placeholder={!value ? placeholder : undefined}
           panel={
             <TimePickerPanel
               steps={steps}

@@ -21,10 +21,10 @@ const TimeRangePicker: FC<TimeRangePickerProps> = (props) => {
   const {
     // allowInput,
     clearable,
-    disabled, // TODO array形式
+    disabled,
     format = 'HH:mm:ss',
     hideDisabledTime = true,
-    placeholder = TEXT_CONFIG.placeholder, // TODO array形式
+    placeholder = TEXT_CONFIG.placeholder,
     // size = 'medium',
     steps = [1, 1, 1],
     value,
@@ -41,6 +41,7 @@ const TimeRangePicker: FC<TimeRangePickerProps> = (props) => {
   const name = `${classPrefix}-time-picker`;
 
   const [isPanelShowed, setPanelShow] = useState(false);
+
   const inputClasses = classNames(`${name}__group`, {
     [`${classPrefix}-is-focused`]: isPanelShowed,
   });
@@ -58,18 +59,19 @@ const TimeRangePicker: FC<TimeRangePickerProps> = (props) => {
   return (
     <RangeInputPopup
       style={style}
-      readonly={true}
-      clearable={clearable}
-      className={inputClasses}
-      value={value ? ' ' : undefined}
-      onClear={handleClear}
-      disabled={disabled as boolean}
-      placeholder={!value ? (placeholder as string) : undefined}
-      suffixIcon={<TimeIcon />}
+      disabled={disabled}
       popupVisible={isPanelShowed}
-      onBlur={onBlur}
-      onFocus={onFocus}
       onPopupVisibleChange={handleShowPopup}
+      rangeInputProps={{
+        clearable,
+        className: inputClasses,
+        value: value ?? undefined,
+        placeholder: !value ? placeholder : undefined,
+        suffixIcon: <TimeIcon />,
+        onClear: handleClear,
+        onBlur,
+        onFocus,
+      }}
       panel={
         <TimeRangePickerPanel
           steps={steps}
