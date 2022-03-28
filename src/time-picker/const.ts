@@ -10,10 +10,3 @@ export const useTimePickerTextConfig = () => {
     placeholder: t(local.placeholder),
   };
 };
-
-export const AM = 'am';
-export const PM = 'pm';
-export const MERIDIEM_LIST = [AM, PM];
-
-export const DEFAULT_STEPS = [1, 1, 1];
-export const DEFAULT_FORMAT = 'HH:mm:ss';

@@ -13,11 +13,12 @@ import SelectInput from '../select-input';
 import TimeRangePicker from './TimeRangePicker';
 import TimePickerPanel from './panel/TimePickerPanel';
 
-import { DEFAULT_STEPS, DEFAULT_FORMAT, useTimePickerTextConfig } from './const';
+import { useTimePickerTextConfig } from './const';
 
 import { StyledProps } from '../common';
 import { TdTimePickerProps } from './type';
 import { formatInputValue, validateInputValue } from '../_common/js/time-picker/utils';
+import { DEFAULT_STEPS, DEFAULT_FORMAT } from '../_common/js/time-picker/const';
 
 // https://github.com/iamkun/dayjs/issues/1552
 dayjs.extend(customParseFormat);

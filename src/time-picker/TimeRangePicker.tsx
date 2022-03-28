@@ -5,10 +5,8 @@ import { TimeIcon } from 'tdesign-icons-react';
 import noop from '../_util/noop';
 import useDefaultValue from '../_util/useDefaultValue';
 import useConfig from '../_util/useConfig';
-import Popup from '../popup';
-import Input from '../input';
+import { RangeInputPopup } from '../range-input';
 import TimeRangePickerPanel from './panel/TimePickerRangePanel';
-import InputItems from './InputItems';
 
 import { useTimePickerTextConfig } from './const';
 
@@ -21,21 +19,21 @@ const TimeRangePicker: FC<TimeRangePickerProps> = (props) => {
   const TEXT_CONFIG = useTimePickerTextConfig();
 
   const {
-    allowInput,
+    // allowInput,
     clearable,
     disabled, // TODO array形式
     format = 'HH:mm:ss',
     hideDisabledTime = true,
     placeholder = TEXT_CONFIG.placeholder, // TODO array形式
-    size = 'medium',
+    // size = 'medium',
     steps = [1, 1, 1],
     value,
     onBlur = noop,
     onChange,
     onFocus = noop,
-    onInput = noop,
+    // onInput = noop,
     style,
-    className,
+    // className,
   } = useDefaultValue(props);
 
   const { classPrefix } = useConfig();
@@ -58,8 +56,21 @@ const TimeRangePicker: FC<TimeRangePickerProps> = (props) => {
   };
 
   return (
-    <Popup
-      content={
+    <RangeInputPopup
+      style={style}
+      readonly={true}
+      clearable={clearable}
+      className={inputClasses}
+      value={value ? ' ' : undefined}
+      onClear={handleClear}
+      disabled={disabled as boolean}
+      placeholder={!value ? (placeholder as string) : undefined}
+      suffixIcon={<TimeIcon />}
+      popupVisible={isPanelShowed}
+      onBlur={onBlur}
+      onFocus={onFocus}
+      onPopupVisibleChange={handleShowPopup}
+      panel={
         <TimeRangePickerPanel
           steps={steps}
           format={format}
@@ -73,40 +84,7 @@ const TimeRangePicker: FC<TimeRangePickerProps> = (props) => {
           }}
         />
       }
-      disabled={disabled as boolean}
-      placement="bottom-left"
-      visible={isPanelShowed}
-      onVisibleChange={handleShowPopup}
-      trigger="click"
-      expandAnimation={true}
-    >
-      <div className={classNames(name, className)} style={style}>
-        <Input
-          size={size}
-          readonly={true}
-          clearable={clearable}
-          className={inputClasses}
-          value={value ? ' ' : undefined}
-          onClear={handleClear}
-          disabled={disabled as boolean}
-          placeholder={!value ? (placeholder as string) : undefined}
-          suffixIcon={<TimeIcon />}
-        />
-        {value ? (
-          <InputItems
-            disabled={disabled}
-            format={format}
-            placeholder={placeholder}
-            allowInput={allowInput}
-            value={value}
-            onBlur={onBlur}
-            onFocus={onFocus}
-            onInput={onInput}
-            onChange={onChange}
-          />
-        ) : null}
-      </div>
-    </Popup>
+    />
   );
 };
 
