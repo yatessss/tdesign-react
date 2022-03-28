@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import useConfig from '../../_util/useConfig';
 import useDefault from '../../_util/useDefault';
 import { TdDatePickerProps, DateValue } from '../type';
+import { extractTimeFormat, extractTimeValue } from '../../_common/js/date-picker/utils-new';
 
 const TIME_FORMAT = 'HH:mm:ss';
 
@@ -35,28 +36,30 @@ export default function useSingle(props: TdDatePickerProps) {
     onInput,
   } = props;
 
-  const [value, onChange] = useDefault(valueFromProps, defaultValueFromProps, onChangeFromProps);
-
-  if (value && !isValidDate(value)) console.error(`value: ${value} is invalid datetime;`);
-
-  const [inputPlaceholder, setInputPlaceholder] = useState(placeholder);
-  const [popupVisible, setPopupVisible] = useState(false);
-  const [timeValue, setTimeValue] = useState(dayjs(value).format(TIME_FORMAT));
-  const [month, setMonth] = useState(dayjs(value).month() || new Date().getMonth());
-  const [year, setYear] = useState(dayjs(value).year() || new Date().getFullYear());
-  const [isHoverCell, setIsHoverCell] = useState(false);
-
+  // 提取时间格式化
+  const timeFormat = extractTimeFormat(format);
   // 兼容未传入正确 format 场景
   const getFinalFormat = useCallback(
     (format) => {
       let dateFormat = format;
-      const arrTime = ['H', 'h', 'm', 's'];
-      const hasTime = arrTime.some((f) => String(dateFormat).includes(f));
-      if (enableTimePicker && !hasTime) dateFormat = [dateFormat, TIME_FORMAT].join(' ');
+      if (enableTimePicker && !timeFormat) {
+        dateFormat = [dateFormat, TIME_FORMAT].join(' ');
+      }
       return dateFormat;
     },
-    [enableTimePicker],
+    [timeFormat, enableTimePicker],
   );
+
+  const [value, onChange] = useDefault(valueFromProps, defaultValueFromProps, onChangeFromProps);
+
+  if (value && !isValidDate(value)) console.error(`value: ${value} is invalid datetime;`);
+
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [isHoverCell, setIsHoverCell] = useState(false);
+  const [inputPlaceholder, setInputPlaceholder] = useState(placeholder);
+  const [timeValue, setTimeValue] = useState(dayjs(value).format(timeFormat || TIME_FORMAT));
+  const [month, setMonth] = useState(dayjs(value).month() || new Date().getMonth());
+  const [year, setYear] = useState(dayjs(value).year() || new Date().getFullYear());
 
   // 日期格式化
   const formatDate = useCallback(
@@ -65,19 +68,27 @@ export default function useSingle(props: TdDatePickerProps) {
       const formatMap = { format, valueType };
       const dateFormat = getFinalFormat(formatMap[type]);
 
-      let formatedDate = dayjs(newDate);
-      const [hour, minute, second, millisecond = 0] = timeValue.split(':');
+      let dayJsDate = dayjs(newDate);
+      const formatedTime = dayJsDate.format(timeFormat || TIME_FORMAT);
+      const [hour = 0, minute = 0, second = 0, millisecond = 0] = extractTimeValue(formatedTime).split(':');
       if (enableTimePicker) {
-        formatedDate = formatedDate
-          .hour(+hour)
+        dayJsDate = dayJsDate
+          .hour(+hour + (formatedTime.includes('pm') ? 12 : 0))
           .minute(+minute)
           .second(+second)
           .millisecond(+millisecond);
       }
 
-      return formatedDate.format(dateFormat);
+      const result = dayJsDate.format(dateFormat);
+
+      // 格式化失败提示
+      if (result === 'Invalid Date') {
+        console.error(`请检查 format 格式是否有效并且与 value 结构一致.\nformat: '${format}' value: '${value}'`);
+      }
+
+      return result;
     },
-    [timeValue, enableTimePicker, format, valueType, getFinalFormat],
+    [value, timeFormat, enableTimePicker, format, valueType, getFinalFormat],
   );
 
   // 未真正选中前可能不断变更输入框的内容

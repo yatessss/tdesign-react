@@ -8,7 +8,7 @@ import { TdDatePickerProps } from './type';
 import SelectInput from '../select-input';
 import DatePanel from './panel/DatePanel';
 import useSingle from './hooks/useSingle';
-import { subtractMonth, addMonth } from '../_common/js/date-picker/utils-new';
+import { subtractMonth, addMonth, extractTimeValue } from '../_common/js/date-picker/utils-new';
 
 export interface DatePickerProps extends TdDatePickerProps, StyledProps {}
 
@@ -97,9 +97,9 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>((props, ref) => {
 
   // timepicker 点击
   function onTimePickerChange(val: string) {
-    const [hour, minute, second, millisecond] = val.split(':');
-    const currentDate = dayjs(inputValue)
-      .hour(+hour)
+    const [hour = 0, minute = 0, second = 0, millisecond = 0] = extractTimeValue(val).split(':');
+    const currentDate = dayjs(inputValue, format)
+      .hour(+hour + (val.includes('pm') ? 12 : 0))
       .minute(+minute)
       .second(+second)
       .millisecond(+millisecond)
@@ -132,24 +132,20 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>((props, ref) => {
 
   function onYearChange(year: number) {
     setYear(year);
-    setInputValue(
-      formatDate(
-        dayjs(inputValue || new Date())
-          .year(year)
-          .toDate(),
-      ),
-    );
+
+    const nextDate = dayjs(inputValue || new Date(), format)
+      .year(year)
+      .toDate();
+    setInputValue(formatDate(nextDate));
   }
 
   function onMonthChange(month: number) {
     setMonth(month);
-    setInputValue(
-      formatDate(
-        dayjs(inputValue || new Date())
-          .month(month)
-          .toDate(),
-      ),
-    );
+
+    const nextDate = dayjs(inputValue || new Date(), format)
+      .month(month)
+      .toDate();
+    setInputValue(formatDate(nextDate));
   }
 
   const panelProps = {

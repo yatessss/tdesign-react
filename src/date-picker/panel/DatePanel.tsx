@@ -6,11 +6,19 @@ import useConfig from '../../_util/useConfig';
 import DateHeader from '../base/Header';
 import DateTable from '../base/Table';
 import DateFooter from '../base/Footer';
-import { getWeeks, getYears, getMonths, flagActive, isEnabledDate } from '../../_common/js/date-picker/utils-new';
-import { TdDatePickerProps, DateValue } from '../type';
 import TimePickerPanel from '../../time-picker/panel/TimePickerPanel';
+import {
+  getWeeks,
+  getYears,
+  getMonths,
+  flagActive,
+  isEnabledDate,
+  extractTimeFormat,
+} from '../../_common/js/date-picker/utils-new';
+import { TdDatePickerProps, DateValue } from '../type';
 import type { TdTimePickerProps } from '../../time-picker';
 
+const TIME_FORMAT = 'HH:mm:ss';
 export interface DatePanelProps extends TdDatePickerProps {
   year?: number;
   month?: number;
@@ -61,6 +69,9 @@ const DatePanel = (props: DatePanelProps) => {
     onMonthChange,
     onTimePickerChange,
   } = props;
+
+  // 提取时间格式化
+  const timeFormat = extractTimeFormat(format) || TIME_FORMAT;
 
   const disableDate = useCallback(
     (date: Date) => !isEnabledDate({ value: date, disableDate: disableDateFromProps, mode, format }),
@@ -138,7 +149,7 @@ const DatePanel = (props: DatePanelProps) => {
 
       {enableTimePicker && (
         <div className={`${classPrefix}-date-picker__panel--time`}>
-          <TimePickerPanel value={timeValue} onChange={onTimePickerChange} {...timePickerProps} />
+          <TimePickerPanel format={timeFormat} value={timeValue} onChange={onTimePickerChange} {...timePickerProps} />
         </div>
       )}
 
