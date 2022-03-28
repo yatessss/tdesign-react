@@ -5,6 +5,8 @@
  * */
 
 import { InputProps, InputValue, InputFormatType } from '../input';
+import { PopupProps } from '../popup';
+import { PopupVisibleChangeContext } from '../popup';
 import { TNode, TElement } from '../common';
 import { MouseEvent, FocusEvent, FormEvent } from 'react';
 
@@ -55,6 +57,11 @@ export interface TdRangeInputProps {
    */
   showClearIconOnEmpty?: boolean;
   /**
+   * 输入框尺寸
+   * @default medium
+   */
+  size?: 'small' | 'medium' | 'large';
+  /**
    * 输入框状态
    */
   status?: 'success' | 'warning' | 'error';
@@ -90,7 +97,11 @@ export interface TdRangeInputProps {
    */
   onChange?: (
     value: RangeInputValue,
-    context?: { e?: FormEvent<HTMLInputElement>; position?: RangeInputPosition },
+    context?: {
+      e?: FormEvent<HTMLInputElement> | MouseEvent<HTMLElement | SVGElement>;
+      position?: RangeInputPosition;
+      trigger?: 'input' | 'clear';
+    },
   ) => void;
   /**
    * 清空按钮点击时触发
@@ -103,8 +114,88 @@ export interface TdRangeInputProps {
     value: RangeInputValue,
     context?: { e?: FocusEvent<HTMLInputElement>; position?: RangeInputPosition },
   ) => void;
+  /**
+   * 进入输入框时触发
+   */
+  onMouseenter?: (context: { e: MouseEvent<HTMLDivElement> }) => void;
+  /**
+   * 离开输入框时触发
+   */
+  onMouseleave?: (context: { e: MouseEvent<HTMLDivElement> }) => void;
+}
+
+/** 组件实例方法 */
+export interface RangeInputInstanceFunctions {
+  /**
+   * 使其中一个输入框失去焦点
+   */
+  blur?: (options?: { position?: RangeInputPosition }) => void;
+  /**
+   * 使其中一个输入框获得焦点
+   */
+  focus?: (options?: { position?: RangeInputPosition }) => void;
+  /**
+   * 使其中一个输入框选中内容
+   */
+  select?: (options?: { position?: RangeInputPosition }) => void;
+}
+
+export interface TdRangeInputPopupProps {
+  /**
+   * 宽度随内容自适应
+   * @default false
+   */
+  autoWidth?: boolean;
+  /**
+   * 是否禁用
+   * @default false
+   */
+  disabled?: boolean;
+  /**
+   * 输入框的值
+   */
+  inputValue?: RangeInputValue;
+  /**
+   * 输入框的值，非受控属性
+   */
+  defaultInputValue?: RangeInputValue;
+  /**
+   * 下拉框内容，可完全自定义
+   */
+  panel?: TElement;
+  /**
+   * 透传 Popup 浮层组件全部属性
+   */
+  popupProps?: PopupProps;
+  /**
+   * 是否显示下拉框
+   */
+  popupVisible?: boolean;
+  /**
+   * 透传 RangeInput 组件全部属性
+   */
+  rangeInputProps?: TdRangeInputProps;
+  /**
+   * 只读状态，值为真会隐藏输入框，且无法打开下拉框
+   * @default false
+   */
+  readonly?: boolean;
+  /**
+   * 输入框值发生变化时触发，`context.trigger` 表示触发输入框值变化的来源：文本输入触发、清除按钮触发等
+   */
+  onInputChange?: (value: RangeInputValue, context?: RangeInputValueChangeContext) => void;
+  /**
+   * 下拉框显示或隐藏时触发
+   */
+  onPopupVisibleChange?: (visible: boolean, context: PopupVisibleChangeContext) => void;
 }
 
 export type RangeInputValue = Array<InputValue>;
 
-export type RangeInputPosition = 'first' | 'second';
+export type RangeInputPosition = 'first' | 'second' | 'all';
+
+export type RangeInputValueChangeContext = {
+  e?: FormEvent<HTMLInputElement> | MouseEvent<HTMLElement | SVGElement>;
+  trigger?: 'input' | 'clear';
+  position?: RangeInputPosition;
+};
