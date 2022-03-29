@@ -7,12 +7,13 @@ import { DatePanelProps } from '../panel/DatePanel';
 
 export interface DatePickerTableProps extends Pick<TdDatePickerProps, 'mode' | 'firstDayOfWeek'>, DatePanelProps {
   data: Array<any>;
+  timeValue?: string;
 }
 
 const DatePickerTable = (props: DatePickerTableProps) => {
   const { classPrefix } = useConfig();
 
-  const { mode, data, onCellClick, onCellMouseEnter, onCellMouseLeave, firstDayOfWeek } = props;
+  const { mode, data, timeValue, onCellClick, onCellMouseEnter, onCellMouseLeave, firstDayOfWeek } = props;
 
   const [local, t] = useLocaleReceiver('datePicker');
   const weekdays = t(local.weekdays);
@@ -43,7 +44,13 @@ const DatePickerTable = (props: DatePickerTableProps) => {
           {data.map((row, i: number) => (
             <tr key={i}>
               {row.map((col: any, j: number) => (
-                <DatePickerCell {...col} key={j} onClick={onCellClick} onMouseEnter={onCellMouseEnter} />
+                <DatePickerCell
+                  {...col}
+                  key={j}
+                  timeValue={timeValue}
+                  onClick={onCellClick}
+                  onMouseEnter={onCellMouseEnter}
+                />
               ))}
             </tr>
           ))}

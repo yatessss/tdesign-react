@@ -140,6 +140,7 @@ const DatePanel = (props: DatePanelProps) => {
         <DateTable
           mode={mode}
           data={tableData}
+          timeValue={timeValue}
           firstDayOfWeek={firstDayOfWeek}
           onCellClick={onCellClick}
           onCellMouseEnter={onCellMouseEnter}

@@ -5,7 +5,7 @@ import classNames from 'classnames';
 import useConfig from '../../_util/useConfig';
 import useDefault from '../../_util/useDefault';
 import { TdDatePickerProps, DateValue } from '../type';
-import { extractTimeFormat, extractTimeValue } from '../../_common/js/date-picker/utils-new';
+import { extractTimeFormat, extractTimeObj } from '../../_common/js/date-picker/utils-new';
 
 const TIME_FORMAT = 'HH:mm:ss';
 
@@ -70,13 +70,13 @@ export default function useSingle(props: TdDatePickerProps) {
 
       let dayJsDate = dayjs(newDate);
       const formatedTime = dayJsDate.format(timeFormat || TIME_FORMAT);
-      const [hour = 0, minute = 0, second = 0, millisecond = 0] = extractTimeValue(formatedTime).split(':');
+      const { hours, minutes, seconds, milliseconds, meridiem } = extractTimeObj(formatedTime);
       if (enableTimePicker) {
         dayJsDate = dayJsDate
-          .hour(+hour + (formatedTime.includes('pm') ? 12 : 0))
-          .minute(+minute)
-          .second(+second)
-          .millisecond(+millisecond);
+          .hour(hours + (/pm/i.test(meridiem) ? 12 : 0))
+          .minute(minutes)
+          .second(seconds)
+          .millisecond(milliseconds);
       }
 
       const result = dayJsDate.format(dateFormat);

@@ -8,7 +8,7 @@ import { TdDatePickerProps } from './type';
 import SelectInput from '../select-input';
 import DatePanel from './panel/DatePanel';
 import useSingle from './hooks/useSingle';
-import { subtractMonth, addMonth, extractTimeValue } from '../_common/js/date-picker/utils-new';
+import { subtractMonth, addMonth, extractTimeObj } from '../_common/js/date-picker/utils-new';
 
 export interface DatePickerProps extends TdDatePickerProps, StyledProps {}
 
@@ -97,14 +97,15 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>((props, ref) => {
 
   // timepicker 点击
   function onTimePickerChange(val: string) {
-    const [hour = 0, minute = 0, second = 0, millisecond = 0] = extractTimeValue(val).split(':');
-    const currentDate = dayjs(inputValue, format)
-      .hour(+hour + (val.includes('pm') ? 12 : 0))
-      .minute(+minute)
-      .second(+second)
-      .millisecond(+millisecond)
-      .toDate();
     setTimeValue(val);
+
+    const { hours, minutes, seconds, milliseconds, meridiem } = extractTimeObj(val);
+    const currentDate = dayjs(inputValue, format)
+      .hour(hours + (/pm/i.test(meridiem) ? 12 : 0))
+      .minute(minutes)
+      .second(seconds)
+      .millisecond(milliseconds)
+      .toDate();
     setInputValue(formatDate(currentDate));
   }
 

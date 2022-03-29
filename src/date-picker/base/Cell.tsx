@@ -1,8 +1,10 @@
 import React from 'react';
 import classNames from 'classnames';
 import useConfig from '../../_util/useConfig';
+import { extractTimeObj } from '../../_common/js/date-picker/utils-new';
 
 export interface DatePickerCellProps {
+  timeValue?: string;
   text: [string, number];
   value: Date;
   active: boolean;
@@ -24,6 +26,7 @@ const DatePickerCell = (props: DatePickerCellProps) => {
   const {
     text,
     value,
+    timeValue,
     active,
     highlight,
     disabled,
@@ -50,11 +53,27 @@ const DatePickerCell = (props: DatePickerCellProps) => {
   });
 
   function handleClick(e: React.MouseEvent) {
-    !disabled && onClick(value, { e });
+    if (disabled) return;
+    if (timeValue) {
+      const { hours, minutes, seconds, milliseconds, meridiem } = extractTimeObj(timeValue);
+      value.setHours(hours + (/pm/i.test(meridiem) ? 12 : 0));
+      value.setMinutes(minutes);
+      value.setSeconds(seconds);
+      value.setMilliseconds(milliseconds);
+    }
+    onClick(value, { e });
   }
 
   function handleMouseEnter() {
-    !disabled && onMouseEnter?.(value);
+    if (disabled) return;
+    if (timeValue) {
+      const { hours, minutes, seconds, milliseconds, meridiem } = extractTimeObj(timeValue);
+      value.setHours(hours + (/pm/i.test(meridiem) ? 12 : 0));
+      value.setMinutes(minutes);
+      value.setSeconds(seconds);
+      value.setMilliseconds(milliseconds);
+    }
+    onMouseEnter?.(value);
   }
 
   return (
