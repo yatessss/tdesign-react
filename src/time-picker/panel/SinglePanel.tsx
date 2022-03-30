@@ -8,13 +8,12 @@ import range from 'lodash/range';
 import useConfig from '../../_util/useConfig';
 import noop from '../../_util/noop';
 import { useTimePickerTextConfig } from '../const';
-
 import {
-  MERIDIEM_LIST,
   AM,
   PM,
   EPickerCols,
   TIME_FORMAT,
+  MERIDIEM_LIST,
   TWELVE_HOUR_FORMAT,
 } from '../../_common/js/time-picker/const';
 import { closestLookup } from '../../_common/js/time-picker/utils';
@@ -133,7 +132,7 @@ const SinglePanel: FC<SinglePanelProps> = (props) => {
     const scrollTop = colsRef.current[idx]?.scrollTop;
 
     let colStep = Math.abs(Math.round(scrollTop / getItemHeight() + 0.5));
-    const meridiem = MERIDIEM_LIST[Math.min(colStep - 1, 1)].toLowerCase(); // 处理PM/AM与am/pm
+    const meridiem = MERIDIEM_LIST[Math.min(colStep - 1, 1)].toLowerCase(); // 处理PM、AM与am、pm
 
     if (Number.isNaN(colStep)) colStep = 1;
     if (timeArr.includes(col)) {

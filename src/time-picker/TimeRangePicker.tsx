@@ -19,28 +19,27 @@ const TimeRangePicker: FC<TimeRangePickerProps> = (props) => {
   const TEXT_CONFIG = useTimePickerTextConfig();
 
   const {
-    // allowInput,
+    allowInput,
     clearable,
     disabled,
     format = 'HH:mm:ss',
     hideDisabledTime = true,
     placeholder = TEXT_CONFIG.placeholder,
-    // size = 'medium',
+    size = 'medium',
     steps = [1, 1, 1],
     value,
-    onBlur = noop,
     onChange,
+    onBlur = noop,
     onFocus = noop,
     // onInput = noop,
     style,
-    // className,
+    className,
   } = useDefaultValue(props);
 
   const { classPrefix } = useConfig();
+  const [isPanelShowed, setPanelShow] = useState(false);
 
   const name = `${classPrefix}-time-picker`;
-
-  const [isPanelShowed, setPanelShow] = useState(false);
 
   const inputClasses = classNames(`${name}__group`, {
     [`${classPrefix}-is-focused`]: isPanelShowed,
@@ -57,36 +56,43 @@ const TimeRangePicker: FC<TimeRangePickerProps> = (props) => {
   };
 
   return (
-    <RangeInputPopup
-      style={style}
-      disabled={disabled}
-      popupVisible={isPanelShowed}
-      onPopupVisibleChange={handleShowPopup}
-      rangeInputProps={{
-        clearable,
-        className: inputClasses,
-        value: value ?? undefined,
-        placeholder: !value ? placeholder : undefined,
-        suffixIcon: <TimeIcon />,
-        onClear: handleClear,
-        onBlur,
-        onFocus,
-      }}
-      panel={
-        <TimeRangePickerPanel
-          steps={steps}
-          format={format}
-          hideDisabledTime={hideDisabledTime}
-          isFooterDisplay={true}
-          value={value}
-          onChange={onChange}
-          handleConfirmClick={(value) => {
-            onChange(value);
-            setPanelShow(false);
-          }}
-        />
-      }
-    />
+    <div className={classNames(name, className)} style={style}>
+      <RangeInputPopup
+        style={style}
+        disabled={disabled}
+        popupVisible={isPanelShowed}
+        onPopupVisibleChange={handleShowPopup}
+        popupProps={{
+          overlayClassName: `${classPrefix}-time-picker__panel-section`,
+        }}
+        rangeInputProps={{
+          clearable,
+          className: inputClasses,
+          value: value ?? undefined,
+          placeholder: !value ? placeholder : undefined,
+          suffixIcon: <TimeIcon />,
+          onClear: handleClear,
+          onBlur,
+          onFocus,
+          readonly: !allowInput,
+          size,
+        }}
+        panel={
+          <TimeRangePickerPanel
+            steps={steps}
+            format={format}
+            hideDisabledTime={hideDisabledTime}
+            isFooterDisplay={true}
+            value={value}
+            onChange={onChange}
+            handleConfirmClick={(value) => {
+              onChange(value);
+              setPanelShow(false);
+            }}
+          />
+        }
+      />
+    </div>
   );
 };
 
