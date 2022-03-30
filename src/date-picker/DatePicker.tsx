@@ -115,8 +115,9 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>((props, ref) => {
   function onConfirmClick() {
     setPopupVisible(false);
 
-    const isValidDate = dayjs(inputValue, format, true).isValid();
-    if (isValidDate) {
+    console.log('inputValue',inputValue)
+    const nextValue = formatDate(inputValue);
+    if (nextValue) {
       onChange(formatDate(inputValue, 'valueType'), dayjs(inputValue));
     } else {
       setInputValue(formatDate(value));

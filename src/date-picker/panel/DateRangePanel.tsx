@@ -11,6 +11,7 @@ import useTableData from './useTableData';
 import useDisableDate from '../hooks/useDisableDate';
 
 export interface DateRangePanelProps extends TdDateRangePickerProps, StyledProps {
+  activeIndex?: number;
   year?: number[];
   month?: number[];
   timeValue?: string[];
@@ -44,6 +45,7 @@ const DateRangePanel = (props: DateRangePanelProps) => {
 
     style,
     className,
+    activeIndex,
     year,
     month,
     timeValue,
@@ -54,12 +56,12 @@ const DateRangePanel = (props: DateRangePanelProps) => {
 
   const disableDateOptions = useDisableDate({ disableDate: disableDateFromProps, mode, format });
 
-  const [startYear = dayjs().year(), endYear = dayjs().year()] = year;
-  const [startMonth = dayjs().month(), endMonth = dayjs().month() + 1] = month;
+  const [startYear, endYear] = year;
+  const [startMonth, endMonth] = month;
 
   const startTableData = useTableData({
-    start: dayjs(value[0] || new Date()).toDate(),
-    end: dayjs(value[1] || new Date()).toDate(),
+    start: value[0] ? dayjs(value[0]).toDate() : undefined,
+    end: value[1] ? dayjs(value[1]).toDate() : undefined,
     year: startYear,
     month: startMonth,
     mode,
@@ -67,8 +69,8 @@ const DateRangePanel = (props: DateRangePanelProps) => {
     ...disableDateOptions,
   });
   const endTableData = useTableData({
-    start: dayjs(value[0] || new Date()).toDate(),
-    end: dayjs(value[1] || new Date()).toDate(),
+    start: value[0] ? dayjs(value[0]).toDate() : undefined,
+    end: value[1] ? dayjs(value[1]).toDate() : undefined,
     year: endYear,
     month: endMonth,
     mode,
@@ -110,24 +112,38 @@ const DateRangePanel = (props: DateRangePanelProps) => {
         />
       ) : null}
       <div className={`${panelName}--content-wrapper`}>
-        <PanelContent
-          partial='start'
-          year={startYear}
-          month={startMonth}
-          timeValue={timeValue[0]}
-          tableData={startTableData}
-          {...panelContentProps}
-        />
         {!enableTimePicker ? (
+          [
+            <PanelContent
+              key="startPanel"
+              partial="start"
+              year={startYear}
+              month={startMonth}
+              timeValue={timeValue[0]}
+              tableData={startTableData}
+              {...panelContentProps}
+            />,
+            <PanelContent
+              key="endPanel"
+              partial="end"
+              year={endYear}
+              month={endMonth}
+              timeValue={timeValue[1]}
+              tableData={endTableData}
+              {...panelContentProps}
+            />,
+          ]
+        ) : (
           <PanelContent
-            partial='end'
-            year={endYear}
-            month={endMonth}
-            timeValue={timeValue[1]}
-            tableData={endTableData}
+            key="start"
+            partial={activeIndex ? 'end' : 'start'}
+            year={activeIndex ? endYear : startYear}
+            month={activeIndex ? endMonth : startMonth}
+            timeValue={activeIndex ? timeValue[1] : timeValue[0]}
+            tableData={activeIndex ? endTableData : startTableData}
             {...panelContentProps}
           />
-        ) : null}
+        )}
       </div>
       {['bottom', 'right'].includes(presetsPlacement) ? (
         <ExtraContent

@@ -9,29 +9,31 @@ export default function useFormat(props) {
   const { enableTimePicker, format = 'YYYY-MM-DD', valueType = 'YYYY-MM-DD', value } = props;
 
   // 提取时间格式化
-  const timeFormat = extractTimeFormat(format);
+  const timeFormat = extractTimeFormat(format) || TIME_FORMAT;
   // 兼容未传入正确 format 场景
-  const getFinalFormat = useCallback(
-    (format) => {
-      let dateFormat = format;
+  const getFullFormat = useCallback(
+    () => {
+      let fullFormat = format;
+      const timeFormat = extractTimeFormat(fullFormat);
       if (enableTimePicker && !timeFormat) {
-        dateFormat = [dateFormat, TIME_FORMAT].join(' ');
+        fullFormat = [fullFormat, TIME_FORMAT].join(' ');
       }
-      return dateFormat;
+      return fullFormat;
     },
-    [timeFormat, enableTimePicker],
+    [format, enableTimePicker],
   );
 
   // 日期格式化
   const formatDate = useCallback(
     (newDate: DateValue | DateValue[], type = 'format') => {
       const formatMap = { format, valueType };
-      const dateFormat = getFinalFormat(formatMap[type]);
+      const fullFormat = getFullFormat();
+      const targetFormat = formatMap[type];
 
       let result;
 
       if (Array.isArray(newDate)) {
-        result = formatRange({ newDate, dateFormat, enableTimePicker, timeFormat });
+        result = formatRange({ newDate, fullFormat, targetFormat, enableTimePicker });
         // 格式化失败提示
         if (result.some((r) => r === 'Invalid Date')) {
           console.error(
@@ -40,7 +42,7 @@ export default function useFormat(props) {
           return [];
         }
       } else {
-        result = formatSingle({ newDate, dateFormat, enableTimePicker, timeFormat });
+        result = formatSingle({ newDate, fullFormat, targetFormat, enableTimePicker });
         // 格式化失败提示
         if (result === 'Invalid Date') {
           console.error(
@@ -52,7 +54,7 @@ export default function useFormat(props) {
 
       return result;
     },
-    [value, timeFormat, enableTimePicker, format, valueType, getFinalFormat],
+    [value, enableTimePicker, format, valueType, getFullFormat],
   );
 
   function isValidDate(value: DateValue | DateValue[], ...args: any) {
@@ -67,15 +69,16 @@ export default function useFormat(props) {
     isValidDate,
     timeFormat,
     formatDate,
-    getFinalFormat,
+    getFullFormat,
   };
 }
 
-function formatRange({ newDate, dateFormat, enableTimePicker, timeFormat }) {
+function formatRange({ newDate, fullFormat, targetFormat, enableTimePicker }) {
   if (!newDate || !Array.isArray(newDate)) return [];
 
-  const dayjsDateList = newDate.map((d) => dayjs(d));
-  const formatedTimeList = dayjsDateList.map((da) => da.format(timeFormat || TIME_FORMAT));
+  const dayjsDateList = newDate.map((d) => dayjs(d).isValid() ? dayjs(d) : dayjs(d, fullFormat));
+  const timeFormat = extractTimeFormat(targetFormat) || TIME_FORMAT;
+  const formatedTimeList = dayjsDateList.map((da) => da.format(timeFormat));
   dayjsDateList.forEach((dayJsDate, index: number) => {
     if (!enableTimePicker) return;
     const { hours, minutes, seconds, milliseconds, meridiem } = extractTimeObj(formatedTimeList[index]);
@@ -87,18 +90,19 @@ function formatRange({ newDate, dateFormat, enableTimePicker, timeFormat }) {
   });
 
   // valueType = 'time-stamp' 返回时间戳
-  if (dateFormat === 'time-stamp') {
+  if (targetFormat === 'time-stamp') {
     return dayjsDateList.map((da) => da.toDate().getTime());
   }
 
-  return dayjsDateList.map((da) => da.format(dateFormat));
+  return dayjsDateList.map((da) => da.format(targetFormat));
 }
 
-function formatSingle({ newDate, dateFormat, enableTimePicker, timeFormat }) {
+function formatSingle({ newDate, fullFormat, targetFormat, enableTimePicker }) {
   if (!newDate) return '';
 
-  let dayJsDate = dayjs(newDate);
-  const formatedTime = dayJsDate.format(timeFormat || TIME_FORMAT);
+  let dayJsDate = dayjs(newDate).isValid() ? dayjs(newDate) : dayjs(newDate, fullFormat);
+  const timeFormat = extractTimeFormat(targetFormat) || TIME_FORMAT;
+  const formatedTime = dayJsDate.format(timeFormat);
   if (enableTimePicker) {
     const { hours, minutes, seconds, milliseconds, meridiem } = extractTimeObj(formatedTime);
     dayJsDate = dayJsDate
@@ -109,7 +113,7 @@ function formatSingle({ newDate, dateFormat, enableTimePicker, timeFormat }) {
   }
 
   // valueType = 'time-stamp' 返回时间戳
-  if (dateFormat === 'time-stamp') return dayJsDate.toDate().getTime();
+  if (targetFormat === 'time-stamp') return dayJsDate.toDate().getTime();
 
-  return dayJsDate.format(dateFormat);
+  return dayJsDate.format(targetFormat);
 }

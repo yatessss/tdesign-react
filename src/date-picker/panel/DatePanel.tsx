@@ -29,13 +29,11 @@ export interface DatePanelProps extends TdDatePickerProps, StyledProps {
   onTimePickerChange?: TdTimePickerProps['onChange'];
 }
 
-const TODAY = dayjs().toDate();
-
 const DatePanel = (props: DatePanelProps) => {
   const { classPrefix, datePicker: globalDatePickerConfig } = useConfig();
   const panelName = `${classPrefix}-date-picker__panel`;
   const {
-    value = TODAY,
+    value,
     mode = 'month',
     format = 'YYYY-MM-DD',
     presetsPlacement = 'bottom',
@@ -50,13 +48,12 @@ const DatePanel = (props: DatePanelProps) => {
   } = props;
 
   const disableDateOptions = useDisableDate({ disableDate: disableDateFromProps, mode, format });
-  const startDate = dayjs(value || new Date()).toDate();
 
   const tableData = useTableData({
     year,
     month,
     mode,
-    start: startDate,
+    start: value ? dayjs(value).toDate() : undefined,
     firstDayOfWeek,
     ...disableDateOptions,
   });

@@ -8,11 +8,35 @@ import { RangeInputRefInterface } from '../../range-input';
 import { TdDateRangePickerProps, DateValue } from '../type';
 import useFormat from './useFormat';
 
-const TIME_FORMAT = 'HH:mm:ss';
-
 export const PARTIAL_MAP = { first: 'start', second: 'end' };
 
-export default function useSingle(props: TdDateRangePickerProps) {
+// 初始化面板年份月份
+function initYearMonthTime(value: DateValue[], mode = 'month', timeFormat = 'HH:mm:ss') {
+  const defaultYearMonth = {
+    year: [dayjs().year(), dayjs().year()],
+    month: [dayjs().month(), dayjs().month()],
+    time: [dayjs().format(timeFormat), dayjs().format(timeFormat)],
+  };
+  if (mode === 'year') {
+    defaultYearMonth.year[1] += 10;
+  } else if (mode === 'month') {
+    defaultYearMonth.year[1] += 1;
+  } else if (mode === 'date') {
+    defaultYearMonth.month[1] += 1;
+  }
+
+  if (!Array.isArray(value) || !value.length) {
+    return defaultYearMonth;
+  }
+
+  return {
+    year: value.map((v) => dayjs(v).year() || dayjs().year()),
+    month: value.map((v) => dayjs(v).month() || dayjs().month()),
+    time: value.map((v) => dayjs(v).format(timeFormat)),
+  };
+}
+
+export default function useRange(props: TdDateRangePickerProps) {
   const { classPrefix, datePicker: globalDatePickerConfig } = useConfig();
   const name = `${classPrefix}-date-range-picker`;
 
@@ -37,7 +61,7 @@ export default function useSingle(props: TdDateRangePickerProps) {
   } = props;
 
   const [value, onChange] = useDefault(valueFromProps, defaultValueFromProps, onChangeFromProps);
-  const { isValidDate, timeFormat, formatDate, getFinalFormat } = useFormat({ ...props, value });
+  const { isValidDate, timeFormat, formatDate, getFullFormat } = useFormat({ ...props, value });
 
   // warning invalid value
   if (!Array.isArray(value)) {
@@ -46,15 +70,18 @@ export default function useSingle(props: TdDateRangePickerProps) {
     console.error(`value: ${value} is invalid datetime!`);
   }
 
+  // 未真正选中前可能不断变更输入框的内容
+  const [inputValue, setInputValue] = useState(formatDate(value));
+  // 选择阶段预选状态
+  // const [cacheValue, setCacheValue] = useState(value);
+
   const [popupVisible, setPopupVisible] = useState(false);
   const [isHoverCell, setIsHoverCell] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0); // 确定当前选中的输入框序号
-  const [timeValue, setTimeValue] = useState(value.map((v) => dayjs(v).format(timeFormat || TIME_FORMAT)));
-  const [month, setMonth] = useState(value.map((v) => dayjs(v).month() || new Date().getMonth()));
-  const [year, setYear] = useState(value.map((v) => dayjs(v).year() || new Date().getFullYear()));
-
-  // 未真正选中前可能不断变更输入框的内容
-  const [inputValue, setInputValue] = useState(formatDate(value));
+  const [isFirstClick, setIsFirstClick] = useState(false); // 记录面板点击次数，两次后才自动关闭
+  const [timeValue, setTimeValue] = useState(initYearMonthTime(value, mode, timeFormat).time);
+  const [month, setMonth] = useState(initYearMonthTime(value, mode).month);
+  const [year, setYear] = useState(initYearMonthTime(value, mode).year);
 
   // input 设置
   const rangeInputProps = useMemo(
@@ -90,16 +117,16 @@ export default function useSingle(props: TdDateRangePickerProps) {
         onInput?.({ input: newVal[index], value, partial: PARTIAL_MAP[position], e });
         setInputValue(newVal);
 
-        const finalFormat = getFinalFormat(format);
+        const fullFormat = getFullFormat();
         // 跳过不符合格式化的输入框内容
-        if (!isValidDate(newVal, finalFormat, true)) return;
+        if (!isValidDate(newVal, fullFormat, true)) return;
         const newYear = [];
         const newMonth = [];
         const newTime = [];
         newVal.forEach((v, i) => {
           newYear.push(dayjs(v).year() || year[i]);
           newMonth.push(dayjs(v).month() || month[i]);
-          newTime.push(dayjs(v).format(timeFormat || TIME_FORMAT) || timeValue[i]);
+          newTime.push(dayjs(v).format(timeFormat) || timeValue[i]);
         });
         setYear(newYear);
         setMonth(newMonth);
@@ -134,8 +161,11 @@ export default function useSingle(props: TdDateRangePickerProps) {
       format,
       rangeInputPropsFromProps,
       isHoverCell,
-      getFinalFormat,
-      isValidDate,
+      getFullFormat,
+      timeFormat,
+      month,
+      year,
+      timeValue,
     ],
   );
 
@@ -145,11 +175,19 @@ export default function useSingle(props: TdDateRangePickerProps) {
       ...popupPropsFromProps,
       expandAnimation: true,
       overlayClassName: `${name}__panel-container`,
-      onVisibleChange: (visible: boolean) => {
-        setPopupVisible(visible);
-        if (!visible) {
+      onVisibleChange: (visible: boolean, context) => {
+        // 输入框点击不关闭面板
+        if (context.trigger === 'trigger-element-click') {
+          return setPopupVisible(true);
+        }
+        if (visible) {
+          // 展开后重置点击次数
+          setIsFirstClick(false);
+        } else {
           setIsHoverCell(false);
         }
+
+        setPopupVisible(visible);
       },
     }),
     [name, popupPropsFromProps, setPopupVisible],
@@ -189,5 +227,8 @@ export default function useSingle(props: TdDateRangePickerProps) {
     formatDate,
     activeIndex,
     setActiveIndex,
+    isValidDate,
+    isFirstClick,
+    setIsFirstClick,
   };
 }

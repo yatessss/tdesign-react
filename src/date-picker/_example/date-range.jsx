@@ -9,7 +9,7 @@ export default function YearDatePicker() {
   return (
     <div className="tdesign-demo-item--datepicker tdesign-demo-block-column">
       <DateRangePicker mode="date" onPick={onPick} />
-      <DateRangePicker mode="date" enableTimePicker />
+      <DateRangePicker mode="date" format="YYYY-MM-DD HH:mm:ss" enableTimePicker />
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { getWeeks, getYears, getMonths, flagActive } from '../../_common/js/date
 import type { DatePanelProps } from './DatePanel';
 
 export interface TableDataProps extends DatePanelProps {
-  start: Date;
+  start: Date | undefined;
   end?: Date | undefined;
   minDate: Date | null;
   maxDate: Date | null;

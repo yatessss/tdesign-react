@@ -7,7 +7,6 @@ import useDefault from '../../_util/useDefault';
 import { TdDatePickerProps, DateValue } from '../type';
 import useFormat from './useFormat';
 
-const TIME_FORMAT = 'HH:mm:ss';
 // window.dayjs = dayjs;
 export default function useSingle(props: TdDatePickerProps) {
   const { classPrefix, datePicker: globalDatePickerConfig } = useConfig();
@@ -34,13 +33,13 @@ export default function useSingle(props: TdDatePickerProps) {
   } = props;
 
   const [value, onChange] = useDefault(valueFromProps, defaultValueFromProps, onChangeFromProps);
-  const { isValidDate, timeFormat, formatDate, getFinalFormat } = useFormat({ ...props, value });
+  const { isValidDate, timeFormat, formatDate, getFullFormat } = useFormat({ ...props, value });
 
   if (value && !isValidDate(value)) console.error(`value: ${value} is invalid datetime;`);
 
   const [popupVisible, setPopupVisible] = useState(false);
   const [isHoverCell, setIsHoverCell] = useState(false);
-  const [timeValue, setTimeValue] = useState(dayjs(value).format(timeFormat || TIME_FORMAT));
+  const [timeValue, setTimeValue] = useState(dayjs(value).format(timeFormat));
   const [month, setMonth] = useState(dayjs(value).month() || new Date().getMonth());
   const [year, setYear] = useState(dayjs(value).year() || new Date().getFullYear());
 
@@ -80,12 +79,12 @@ export default function useSingle(props: TdDatePickerProps) {
         // 输入事件
         setInputValue(val);
 
-        const finalFormat = getFinalFormat(format);
+        const fullFormat = getFullFormat();
         // 跳过不符合格式化的输入框内容
-        if (!isValidDate(val, finalFormat, true)) return;
+        if (!isValidDate(val, fullFormat, true)) return;
         const newMonth = dayjs(val).month();
         const newYear = dayjs(val).year();
-        const newTime = dayjs(val).format(timeFormat || TIME_FORMAT);
+        const newTime = dayjs(val).format(timeFormat);
         !Number.isNaN(newYear) && setYear(newYear);
         !Number.isNaN(newMonth) && setMonth(newMonth);
         !Number.isNaN(newTime) && setTimeValue(newTime);
@@ -119,8 +118,9 @@ export default function useSingle(props: TdDatePickerProps) {
       format,
       inputPropsFromProps,
       isHoverCell,
-      getFinalFormat,
+      getFullFormat,
       isValidDate,
+      timeFormat,
     ],
   );
 
