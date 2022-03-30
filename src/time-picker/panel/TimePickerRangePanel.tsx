@@ -13,8 +13,7 @@ import { DEFAULT_STEPS, DEFAULT_FORMAT } from '../../_common/js/time-picker/cons
 import { TdTimeRangePickerProps, TimeRangeValue } from '../type';
 
 export interface TimeRangePickerPanelProps extends Omit<SinglePanelProps, 'value' | 'onChange'> {
-  // 是否展示footer
-  isFooterDisplay?: boolean;
+  isFooterDisplay?: boolean; // 是否展示footer
   handleConfirmClick?: (value: TimeRangeValue) => void;
   value: TdTimeRangePickerProps['value'];
   onChange: TdTimeRangePickerProps['onChange'];
@@ -31,7 +30,6 @@ const TimePickerPanel: FC<TimeRangePickerPanelProps> = (props) => {
   } = props;
 
   const TEXT_CONFIG = useTimePickerTextConfig();
-
   const { classPrefix } = useConfig();
 
   const [startTime, endTime] = value || [];
@@ -54,7 +52,7 @@ const TimePickerPanel: FC<TimeRangePickerPanelProps> = (props) => {
   }, [value, format]);
 
   return (
-    <div className={classNames(panelClassName, `${panelClassName}-section`)}>
+    <div className={classNames(panelClassName)}>
       <div className={`${panelClassName}-section-body`}>
         <SinglePanel
           {...props}
@@ -76,6 +74,7 @@ const TimePickerPanel: FC<TimeRangePickerPanelProps> = (props) => {
           <Button
             theme="primary"
             variant="base"
+            size="small"
             onClick={() => {
               handleConfirmClick(defaultValue);
             }}

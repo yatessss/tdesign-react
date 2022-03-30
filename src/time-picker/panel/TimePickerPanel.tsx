@@ -9,8 +9,7 @@ import { useTimePickerTextConfig } from '../const';
 import { DEFAULT_STEPS, DEFAULT_FORMAT } from '../../_common/js/time-picker/const';
 
 export interface TimePickerPanelProps extends SinglePanelProps {
-  // 是否展示footer
-  isFooterDisplay?: boolean;
+  isFooterDisplay?: boolean; // 是否展示footer
   handleConfirmClick?: (defaultValue: dayjs.Dayjs) => void;
 }
 
@@ -61,7 +60,7 @@ const TimePickerPanel: FC<TimePickerPanelProps> = (props) => {
           </Button>
           {!showNowTimeBtn ? (
             <Button theme="primary" variant="text" size="small" onClick={() => onChange(dayjs().format(format))}>
-              {TEXT_CONFIG.nowtime}
+              {TEXT_CONFIG.nowTime}
             </Button>
           ) : null}
         </div>
