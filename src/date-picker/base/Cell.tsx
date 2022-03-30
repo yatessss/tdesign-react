@@ -61,7 +61,7 @@ const DatePickerCell = (props: DatePickerCellProps) => {
       value.setSeconds(seconds);
       value.setMilliseconds(milliseconds);
     }
-    onClick(value, { e });
+    onClick?.(value, { e });
   }
 
   function handleMouseEnter() {

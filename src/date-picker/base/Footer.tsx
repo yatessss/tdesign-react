@@ -3,9 +3,10 @@ import classNames from 'classnames';
 import { useLocaleReceiver } from '../../locale/LocalReceiver';
 import Button from '../../button';
 import useConfig from '../../_util/useConfig';
-import { TdDatePickerProps } from '../type';
+import { TdDatePickerProps, TdDateRangePickerProps } from '../type';
 
-interface DatePickerFooterProps extends Pick<TdDatePickerProps, 'enableTimePicker' | 'presets' | 'presetsPlacement'> {
+interface DatePickerFooterProps extends Pick<TdDatePickerProps, 'enableTimePicker' | 'presetsPlacement'> {
+  presets: TdDatePickerProps['presets'] | TdDateRangePickerProps['presets'];
   onPresetClick: Function;
   onConfirmClick: Function;
 }

@@ -1,25 +1,16 @@
-import React, { useMemo, useCallback } from 'react';
+import React from 'react';
+import classNames from 'classnames';
 import dayjs from 'dayjs';
-import isObject from 'lodash/isObject';
-import { useLocaleReceiver } from '../../locale/LocalReceiver';
 import useConfig from '../../_util/useConfig';
-import DateHeader from '../base/Header';
-import DateTable from '../base/Table';
-import DateFooter from '../base/Footer';
-import TimePickerPanel from '../../time-picker/panel/TimePickerPanel';
-import {
-  getWeeks,
-  getYears,
-  getMonths,
-  flagActive,
-  isEnabledDate,
-  extractTimeFormat,
-} from '../../_common/js/date-picker/utils-new';
+import { StyledProps } from '../../common';
+import PanelContent from './PanelContent';
+import ExtraContent from './ExtraContent';
 import { TdDatePickerProps, DateValue } from '../type';
 import type { TdTimePickerProps } from '../../time-picker';
+import useTableData from './useTableData';
+import useDisableDate from '../hooks/useDisableDate';
 
-const TIME_FORMAT = 'HH:mm:ss';
-export interface DatePanelProps extends TdDatePickerProps {
+export interface DatePanelProps extends TdDatePickerProps, StyledProps {
   year?: number;
   month?: number;
   timeValue?: string;
@@ -38,131 +29,69 @@ export interface DatePanelProps extends TdDatePickerProps {
   onTimePickerChange?: TdTimePickerProps['onChange'];
 }
 
-const DatePanel = (props: DatePanelProps) => {
-  // 国际化文本初始化
-  const [local, t] = useLocaleReceiver('datePicker');
-  const monthAriaLabel: string[] = t(local.months);
+const TODAY = dayjs().toDate();
 
+const DatePanel = (props: DatePanelProps) => {
   const { classPrefix, datePicker: globalDatePickerConfig } = useConfig();
+  const panelName = `${classPrefix}-date-picker__panel`;
   const {
-    value,
+    value = TODAY,
     mode = 'month',
-    format,
-    presets,
-    enableTimePicker,
-    timePickerProps,
+    format = 'YYYY-MM-DD',
     presetsPlacement = 'bottom',
     disableDate: disableDateFromProps,
     firstDayOfWeek = globalDatePickerConfig.firstDayOfWeek,
 
+    style,
+    className,
     year,
     month,
-    timeValue,
     onClick,
-    onCellClick,
-    onCellMouseEnter,
-    onCellMouseLeave,
-    onJumperClick,
-    onConfirmClick,
-    onPresetClick,
-    onYearChange,
-    onMonthChange,
-    onTimePickerChange,
   } = props;
 
-  // 提取时间格式化
-  const timeFormat = extractTimeFormat(format) || TIME_FORMAT;
+  const disableDateOptions = useDisableDate({ disableDate: disableDateFromProps, mode, format });
+  const startDate = dayjs(value || new Date()).toDate();
 
-  const disableDate = useCallback(
-    (date: Date) => !isEnabledDate({ value: date, disableDate: disableDateFromProps, mode, format }),
-    [disableDateFromProps, mode, format],
-  );
-  const minDate = useMemo(
-    () =>
-      isObject(disableDateFromProps) && 'before' in disableDateFromProps ? new Date(disableDateFromProps.before) : null,
-    [disableDateFromProps],
-  );
-  const maxDate = useMemo(
-    () =>
-      isObject(disableDateFromProps) && 'after' in disableDateFromProps ? new Date(disableDateFromProps.after) : null,
-    [disableDateFromProps],
-  );
+  const tableData = useTableData({
+    year,
+    month,
+    mode,
+    start: startDate,
+    firstDayOfWeek,
+    ...disableDateOptions,
+  });
 
-  // 列表数据
-  const tableData = useMemo(() => {
-    let data = [];
+  const panelContentProps = {
+    mode,
+    year,
+    month,
+    format,
+    firstDayOfWeek,
+    tableData,
 
-    const options = {
-      minDate,
-      maxDate,
-      disableDate,
-      firstDayOfWeek,
-      monthLocal: monthAriaLabel,
-    };
-
-    if (mode === 'date') {
-      data = getWeeks({ year, month }, options);
-    } else if (mode === 'month') {
-      data = getMonths(year, options);
-    } else if (mode === 'year') {
-      data = getYears(year, options);
-    }
-
-    const start = dayjs(value).toDate();
-
-    return flagActive(data, { start, type: mode });
-  }, [year, month, mode, value, minDate, maxDate, disableDate, firstDayOfWeek, monthAriaLabel]);
-
-  const showPanelFooter = enableTimePicker || presets;
-  const extraContent = showPanelFooter && (
-    <DateFooter
-      enableTimePicker={enableTimePicker}
-      onConfirmClick={onConfirmClick}
-      presets={presets}
-      onPresetClick={onPresetClick}
-    />
-  );
-
-  const panelContent = (
-    <div className={`${classPrefix}-date-picker__panel--top`} onClick={(e) => onClick({ e })}>
-      {presetsPlacement === 'left' && extraContent}
-
-      <div className={`${classPrefix}-date-picker__panel--${mode}`}>
-        <DateHeader
-          mode={mode}
-          year={year}
-          month={month}
-          onMonthChange={onMonthChange}
-          onYearChange={onYearChange}
-          onJumperClick={onJumperClick}
-        />
-
-        <DateTable
-          mode={mode}
-          data={tableData}
-          timeValue={timeValue}
-          firstDayOfWeek={firstDayOfWeek}
-          onCellClick={onCellClick}
-          onCellMouseEnter={onCellMouseEnter}
-          onCellMouseLeave={onCellMouseLeave}
-        />
-      </div>
-
-      {enableTimePicker && (
-        <div className={`${classPrefix}-date-picker__panel--time`}>
-          <TimePickerPanel format={timeFormat} value={timeValue} onChange={onTimePickerChange} {...timePickerProps} />
-        </div>
-      )}
-
-      {presetsPlacement === 'right' && extraContent}
-    </div>
-  );
+    enableTimePicker: props.enableTimePicker,
+    timePickerProps: props.timePickerProps,
+    timeValue: props.timeValue,
+    onMonthChange: props.onMonthChange,
+    onYearChange: props.onYearChange,
+    onJumperClick: props.onJumperClick,
+    onCellClick: props.onCellClick,
+    onCellMouseEnter: props.onCellMouseEnter,
+    onCellMouseLeave: props.onCellMouseLeave,
+    onTimePickerChange: props.onTimePickerChange,
+  };
 
   return (
-    <div className={`${classPrefix}-date-picker__panel`}>
-      {presetsPlacement === 'top' && extraContent}
-      {panelContent}
-      {presetsPlacement === 'bottom' && extraContent}
+    <div
+      style={style}
+      className={classNames(panelName, className, {
+        [`${panelName}--direction-row`]: ['left', 'right'].includes(presetsPlacement),
+      })}
+      onClick={(e) => onClick?.({ e })}
+    >
+      {['top', 'left'].includes(presetsPlacement) ? <ExtraContent {...props} /> : null}
+      <PanelContent tableData={tableData} {...panelContentProps} />
+      {['bottom', 'right'].includes(presetsPlacement) ? <ExtraContent {...props} /> : null}
     </div>
   );
 };

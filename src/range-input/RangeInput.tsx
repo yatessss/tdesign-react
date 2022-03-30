@@ -60,6 +60,7 @@ const RangeInput = React.forwardRef((props: RangeInputProps, ref: React.RefObjec
     suffixIcon,
     clearable,
     showClearIconOnEmpty,
+    onEnter,
     onClear,
     onFocus,
     onBlur,
@@ -101,6 +102,10 @@ const RangeInput = React.forwardRef((props: RangeInputProps, ref: React.RefObjec
   function handleClear(e: React.MouseEvent<SVGSVGElement>) {
     onClear?.({ e });
     onChange?.(['', ''], { e, trigger: 'clear', position: 'all' });
+  }
+
+  function handleEnter(rangeValue: RangeInputValue, context) {
+    onEnter?.(rangeValue, context);
   }
 
   function handleFocus(rangeValue: RangeInputValue, context) {
@@ -167,6 +172,7 @@ const RangeInput = React.forwardRef((props: RangeInputProps, ref: React.RefObjec
           format={firstFormat}
           value={firstValue}
           onClear={() => onChange?.([], { position: 'second', trigger: 'input' })}
+          onEnter={(val, { e }) => handleEnter([val, secondValue], { e, position: 'first' })}
           onFocus={(val, { e }) => handleFocus([val, secondValue], { e, position: 'first' })}
           onBlur={(val, { e }) => handleBlur([val, secondValue], { e, position: 'first' })}
           onChange={(val, { e }) => onChange?.([val, secondValue], { e, position: 'first', trigger: 'input' })}
@@ -184,6 +190,7 @@ const RangeInput = React.forwardRef((props: RangeInputProps, ref: React.RefObjec
           format={secondFormat}
           value={secondValue}
           onClear={() => onChange?.([], { position: 'second', trigger: 'input' })}
+          onEnter={(val, { e }) => handleEnter([firstValue, val], { e, position: 'second' })}
           onFocus={(val, { e }) => handleFocus([firstValue, val], { e, position: 'second' })}
           onBlur={(val, { e }) => handleBlur([firstValue, val], { e, position: 'second' })}
           onChange={(val, { e }) => onChange?.([firstValue, val], { e, position: 'second', trigger: 'input' })}

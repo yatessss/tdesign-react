@@ -29,7 +29,7 @@ const DatePickerTable = (props: DatePickerTableProps) => {
   const tableClass = `${classPrefix}-date-picker__table`;
 
   return (
-    <div className={tableClass} onMouseLeave={(e) => onCellMouseLeave({ e })}>
+    <div className={tableClass} onMouseLeave={(e) => onCellMouseLeave?.({ e })}>
       <table>
         {mode === 'date' && (
           <thead>
