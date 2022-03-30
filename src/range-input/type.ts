@@ -88,32 +88,23 @@ export interface TdRangeInputProps {
   /**
    * 范围输入框失去焦点时触发
    */
-  onBlur?: (
-    value: RangeInputValue,
-    context?: { e?: FocusEvent<HTMLInputElement>; position?: RangeInputPosition },
-  ) => void;
+  onBlur?: (value: RangeInputValue, context?: { e?: FocusEvent<HTMLInputElement>; position?: RangeInputPosition }) => void;
   /**
    * 范围输入框值发生变化时触发
    */
-  onChange?: (
-    value: RangeInputValue,
-    context?: {
-      e?: FormEvent<HTMLInputElement> | MouseEvent<HTMLElement | SVGElement>;
-      position?: RangeInputPosition;
-      trigger?: 'input' | 'clear';
-    },
-  ) => void;
+  onChange?: (value: RangeInputValue, context?: { e?: FormEvent<HTMLInputElement> | MouseEvent<HTMLElement | SVGElement>; position?: RangeInputPosition; trigger?: 'input' | 'clear' })    => void;
   /**
    * 清空按钮点击时触发
    */
   onClear?: (context: { e: MouseEvent<SVGElement> }) => void;
   /**
+   * 回车键按下时触发
+   */
+  onEnter?: (value: RangeInputValue, context?: { e?: FormEvent<HTMLInputElement> | MouseEvent<HTMLDivElement>; position?: RangeInputPosition })  => void;
+  /**
    * 范围输入框获得焦点时触发
    */
-  onFocus?: (
-    value: RangeInputValue,
-    context?: { e?: FocusEvent<HTMLInputElement>; position?: RangeInputPosition },
-  ) => void;
+  onFocus?: (value: RangeInputValue, context?: { e?: FocusEvent<HTMLInputElement>; position?: RangeInputPosition }) => void;
   /**
    * 进入输入框时触发
    */
@@ -129,15 +120,15 @@ export interface RangeInputInstanceFunctions {
   /**
    * 使其中一个输入框失去焦点
    */
-  blur?: (options?: { position?: RangeInputPosition }) => void;
+  blur?: (options?: {position?: RangeInputPosition}) => void;
   /**
    * 使其中一个输入框获得焦点
    */
-  focus?: (options?: { position?: RangeInputPosition }) => void;
+  focus?: (options?: {position?: RangeInputPosition}) => void;
   /**
    * 使其中一个输入框选中内容
    */
-  select?: (options?: { position?: RangeInputPosition }) => void;
+  select?: (options?: {position?: RangeInputPosition}) => void;
 }
 
 export interface TdRangeInputPopupProps {
@@ -183,7 +174,7 @@ export interface TdRangeInputPopupProps {
   /**
    * 输入框值发生变化时触发，`context.trigger` 表示触发输入框值变化的来源：文本输入触发、清除按钮触发等
    */
-  onInputChange?: (value: RangeInputValue, context?: RangeInputValueChangeContext) => void;
+  onInputChange?: (value: RangeInputValue, context?: RangeInputValueChangeContext)  => void;
   /**
    * 下拉框显示或隐藏时触发
    */
@@ -194,8 +185,4 @@ export type RangeInputValue = Array<InputValue>;
 
 export type RangeInputPosition = 'first' | 'second' | 'all';
 
-export type RangeInputValueChangeContext = {
-  e?: FormEvent<HTMLInputElement> | MouseEvent<HTMLElement | SVGElement>;
-  trigger?: 'input' | 'clear';
-  position?: RangeInputPosition;
-};
+export type RangeInputValueChangeContext = { e?: FormEvent<HTMLInputElement> | MouseEvent<HTMLElement | SVGElement>; trigger?: 'input' | 'clear', position?: RangeInputPosition };

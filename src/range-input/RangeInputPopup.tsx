@@ -2,7 +2,6 @@ import React from 'react';
 import classNames from 'classnames';
 import Popup from '../popup';
 import useConfig from '../_util/useConfig';
-import useDefault from '../_util/useDefault';
 import RangeInput from './RangeInput';
 import type { StyledProps } from '../common';
 import type { TdRangeInputPopupProps } from './type';
@@ -15,8 +14,6 @@ const RangeInputPopup = React.forwardRef((props: RangeInputPopupProps, ref: Reac
   const name = `${classPrefix}-range-input-popup`;
 
   const { className, style, inputValue, panel, popupProps, rangeInputProps, popupVisible, onInputChange } = props;
-
-  const [value, onChange] = useDefault(inputValue, [], onInputChange);
 
   const { tOverlayStyle, innerPopupVisible, onInnerPopupVisibleChange } = useOverlayStyle(props);
 
@@ -40,7 +37,7 @@ const RangeInputPopup = React.forwardRef((props: RangeInputPopupProps, ref: Reac
         overlayStyle={tOverlayStyle}
         className={popupClasses}
       >
-        <RangeInput value={value} onChange={onChange} {...rangeInputProps} />
+        <RangeInput value={inputValue} onChange={onInputChange} {...rangeInputProps} />
       </Popup>
     </div>
   );

@@ -1,14 +1,13 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CalendarIcon } from 'tdesign-icons-react';
 import dayjs from 'dayjs';
 import classNames from 'classnames';
 import useConfig from '../../_util/useConfig';
 import useDefault from '../../_util/useDefault';
 import { TdDatePickerProps, DateValue } from '../type';
-import { extractTimeFormat, extractTimeObj } from '../../_common/js/date-picker/utils-new';
+import useFormat from './useFormat';
 
 const TIME_FORMAT = 'HH:mm:ss';
-
 // window.dayjs = dayjs;
 export default function useSingle(props: TdDatePickerProps) {
   const { classPrefix, datePicker: globalDatePickerConfig } = useConfig();
@@ -23,80 +22,30 @@ export default function useSingle(props: TdDatePickerProps) {
     onChange: onChangeFromProps,
     prefixIcon,
     suffixIcon,
-    enableTimePicker,
     inputProps: inputPropsFromProps,
     popupProps: popupPropsFromProps,
     allowInput = true,
     clearable = true,
     format = 'YYYY-MM-DD',
-    valueType = 'YYYY-MM-DD',
     placeholder = globalDatePickerConfig.placeholder[mode],
     onBlur,
     onFocus,
     onInput,
   } = props;
 
-  // 提取时间格式化
-  const timeFormat = extractTimeFormat(format);
-  // 兼容未传入正确 format 场景
-  const getFinalFormat = useCallback(
-    (format) => {
-      let dateFormat = format;
-      if (enableTimePicker && !timeFormat) {
-        dateFormat = [dateFormat, TIME_FORMAT].join(' ');
-      }
-      return dateFormat;
-    },
-    [timeFormat, enableTimePicker],
-  );
-
   const [value, onChange] = useDefault(valueFromProps, defaultValueFromProps, onChangeFromProps);
+  const { isValidDate, timeFormat, formatDate, getFinalFormat } = useFormat({ ...props, value });
 
   if (value && !isValidDate(value)) console.error(`value: ${value} is invalid datetime;`);
 
   const [popupVisible, setPopupVisible] = useState(false);
   const [isHoverCell, setIsHoverCell] = useState(false);
-  const [inputPlaceholder, setInputPlaceholder] = useState(placeholder);
   const [timeValue, setTimeValue] = useState(dayjs(value).format(timeFormat || TIME_FORMAT));
   const [month, setMonth] = useState(dayjs(value).month() || new Date().getMonth());
   const [year, setYear] = useState(dayjs(value).year() || new Date().getFullYear());
 
-  // 日期格式化
-  const formatDate = useCallback(
-    (newDate: DateValue, type = 'format') => {
-      if (!newDate) return '';
-      const formatMap = { format, valueType };
-      const dateFormat = getFinalFormat(formatMap[type]);
-
-      let dayJsDate = dayjs(newDate);
-      const formatedTime = dayJsDate.format(timeFormat || TIME_FORMAT);
-      const { hours, minutes, seconds, milliseconds, meridiem } = extractTimeObj(formatedTime);
-      if (enableTimePicker) {
-        dayJsDate = dayJsDate
-          .hour(hours + (/pm/i.test(meridiem) ? 12 : 0))
-          .minute(minutes)
-          .second(seconds)
-          .millisecond(milliseconds);
-      }
-
-      const result = dayJsDate.format(dateFormat);
-
-      // 格式化失败提示
-      if (result === 'Invalid Date') {
-        console.error(`请检查 format 格式是否有效并且与 value 结构一致.\nformat: '${format}' value: '${value}'`);
-      }
-
-      return result;
-    },
-    [value, timeFormat, enableTimePicker, format, valueType, getFinalFormat],
-  );
-
   // 未真正选中前可能不断变更输入框的内容
-  const [inputValue, setInputValue] = useState(value ? formatDate(value) : undefined);
-
-  function isValidDate(...args: any) {
-    return dayjs(...args).isValid();
-  }
+  const [inputValue, setInputValue] = useState(formatDate(value));
 
   // input 设置
   const inputProps = useMemo(
@@ -106,7 +55,7 @@ export default function useSingle(props: TdDatePickerProps) {
       clearable,
       prefixIcon,
       readonly: !allowInput,
-      placeholder: inputPlaceholder,
+      placeholder,
       suffixIcon: suffixIcon || <CalendarIcon />,
       className: classNames({
         [`${name}__input--placeholder`]: isHoverCell,
@@ -115,19 +64,15 @@ export default function useSingle(props: TdDatePickerProps) {
         e.stopPropagation();
         setPopupVisible(false);
         onChange('', dayjs(''));
-        setInputPlaceholder(placeholder);
       },
       onBlur: (val: string, { e }) => {
-        onBlur?.({ value, e });
+        onBlur?.({ value: val, e });
         if (!isValidDate(val, format, true)) {
           setInputValue(formatDate(value));
         }
       },
       onFocus: (_: string, { e }) => {
         onFocus?.({ value, e });
-        const TODAY = dayjs().format(format);
-        const renderPlaceholder = value ? placeholder : TODAY;
-        setInputPlaceholder(renderPlaceholder);
       },
       onChange: (val: string, { e }) => {
         onInput?.({ input: val, value, e });
@@ -140,7 +85,7 @@ export default function useSingle(props: TdDatePickerProps) {
         if (!isValidDate(val, finalFormat, true)) return;
         const newMonth = dayjs(val).month();
         const newYear = dayjs(val).year();
-        const newTime = dayjs(val).format(TIME_FORMAT);
+        const newTime = dayjs(val).format(timeFormat || TIME_FORMAT);
         !Number.isNaN(newYear) && setYear(newYear);
         !Number.isNaN(newMonth) && setMonth(newMonth);
         !Number.isNaN(newTime) && setTimeValue(newTime);
@@ -150,7 +95,7 @@ export default function useSingle(props: TdDatePickerProps) {
 
         setPopupVisible(false);
         if (isValidDate(val, format, true)) {
-          onChange(formatDate(val, 'valueType'), dayjs(val));
+          onChange(formatDate(val, 'valueType') as DateValue, dayjs(val));
         } else if (isValidDate(value)) {
           setInputValue(formatDate(value));
         } else {
@@ -164,7 +109,6 @@ export default function useSingle(props: TdDatePickerProps) {
       suffixIcon,
       clearable,
       prefixIcon,
-      inputPlaceholder,
       placeholder,
       formatDate,
       onBlur,
@@ -176,6 +120,7 @@ export default function useSingle(props: TdDatePickerProps) {
       inputPropsFromProps,
       isHoverCell,
       getFinalFormat,
+      isValidDate,
     ],
   );
 
@@ -189,11 +134,10 @@ export default function useSingle(props: TdDatePickerProps) {
         setPopupVisible(visible);
         if (!visible) {
           setIsHoverCell(false);
-          setInputPlaceholder(placeholder);
         }
       },
     }),
-    [name, placeholder, popupPropsFromProps, setInputPlaceholder, setPopupVisible],
+    [name, popupPropsFromProps, setPopupVisible],
   );
 
   // 输入框响应 value 变化

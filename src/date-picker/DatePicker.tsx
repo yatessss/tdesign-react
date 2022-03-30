@@ -92,6 +92,8 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>((props, ref) => {
         .toDate(),
     );
 
+    setYear(nextYear);
+    setMonth(nextMonth);
     setInputValue(nextInputValue);
   }
 
