@@ -2,13 +2,13 @@
   {
     "name": "destroyOnClose",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
     "name": "showArrow",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {

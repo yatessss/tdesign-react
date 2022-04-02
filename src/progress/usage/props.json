@@ -1,8 +1,8 @@
 [
   {
     "name": "label",
-    "type": "String",
-    "defaultValue": "true",
+    "type": "Boolean",
+    "defaultValue": true,
     "options": []
   },
   {

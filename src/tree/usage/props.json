@@ -74,19 +74,19 @@
   {
     "name": "icon",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
     "name": "label",
-    "type": "String",
-    "defaultValue": "true",
+    "type": "Boolean",
+    "defaultValue": true,
     "options": []
   },
   {
     "name": "lazy",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
@@ -98,7 +98,7 @@
   {
     "name": "transition",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {

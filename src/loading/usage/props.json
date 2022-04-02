@@ -8,7 +8,7 @@
   {
     "name": "indicator",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
@@ -20,19 +20,19 @@
   {
     "name": "loading",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
     "name": "preventScrollThrough",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
     "name": "showOverlay",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   }
 ]

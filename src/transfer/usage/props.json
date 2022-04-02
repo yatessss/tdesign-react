@@ -33,7 +33,7 @@
   {
     "name": "showCheckAll",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {

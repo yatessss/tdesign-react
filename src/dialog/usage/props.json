@@ -1,20 +1,20 @@
 [
   {
     "name": "closeBtn",
-    "type": "String",
-    "defaultValue": "true",
+    "type": "Boolean",
+    "defaultValue": true,
     "options": []
   },
   {
     "name": "closeOnEscKeydown",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
     "name": "closeOnOverlayClick",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
@@ -32,13 +32,13 @@
   {
     "name": "footer",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
     "name": "header",
-    "type": "String",
-    "defaultValue": "true",
+    "type": "Boolean",
+    "defaultValue": true,
     "options": []
   },
   {
@@ -78,7 +78,7 @@
   {
     "name": "preventScrollThrough",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
@@ -90,7 +90,7 @@
   {
     "name": "showOverlay",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {

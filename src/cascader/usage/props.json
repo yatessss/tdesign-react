@@ -26,7 +26,7 @@
   {
     "name": "lazy",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
@@ -56,7 +56,7 @@
   {
     "name": "showAllLevels",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {

@@ -48,7 +48,7 @@
   {
     "name": "preventSubmitDefault",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
@@ -75,7 +75,7 @@
   {
     "name": "showErrorMessage",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {

@@ -2,7 +2,7 @@
   {
     "name": "loading",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {

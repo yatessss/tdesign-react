@@ -1,8 +1,8 @@
 [
   {
     "name": "close",
-    "type": "String",
-    "defaultValue": "false",
+    "type": "Boolean",
+    "defaultValue": false,
     "options": []
   },
   {

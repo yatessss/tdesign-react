@@ -8,13 +8,13 @@
   {
     "name": "closeOnEscKeydown",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
     "name": "closeOnOverlayClick",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
@@ -26,7 +26,7 @@
   {
     "name": "footer",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
@@ -76,7 +76,7 @@
   {
     "name": "preventScrollThrough",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
@@ -88,7 +88,7 @@
   {
     "name": "showOverlay",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {

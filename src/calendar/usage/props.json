@@ -14,7 +14,7 @@
   {
     "name": "isShowWeekendDefault",
     "type": "Boolean",
-    "defaultValue": false,
+    "defaultValue": true,
     "options": []
   },
   {
