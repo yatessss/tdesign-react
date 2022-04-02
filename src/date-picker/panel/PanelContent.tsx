@@ -21,13 +21,13 @@ export interface PanelContentProps {
   timeValue: DatePanelProps['timeValue'];
 
   tableData: any[];
-  onMonthChange: DatePanelProps['onMonthChange'] | DateRangePanelProps['onMonthChange'],
-  onYearChange: DatePanelProps['onYearChange'] | DateRangePanelProps['onYearChange'],
-  onJumperClick: DatePanelProps['onJumperClick'] | DateRangePanelProps['onJumperClick'],
-  onCellClick: DatePanelProps['onCellClick'] | DateRangePanelProps['onCellClick'],
-  onCellMouseEnter: DatePanelProps['onCellMouseEnter'] | DateRangePanelProps['onCellMouseEnter'],
-  onCellMouseLeave: DatePanelProps['onCellMouseLeave'] | DateRangePanelProps['onCellMouseLeave'],
-  onTimePickerChange: DatePanelProps['onTimePickerChange'] | DateRangePanelProps['onTimePickerChange'],
+  onMonthChange: DatePanelProps['onMonthChange'] | DateRangePanelProps['onMonthChange'];
+  onYearChange: DatePanelProps['onYearChange'] | DateRangePanelProps['onYearChange'];
+  onJumperClick: DatePanelProps['onJumperClick'] | DateRangePanelProps['onJumperClick'];
+  onCellClick: DatePanelProps['onCellClick'] | DateRangePanelProps['onCellClick'];
+  onCellMouseEnter: DatePanelProps['onCellMouseEnter'] | DateRangePanelProps['onCellMouseEnter'];
+  onCellMouseLeave: DatePanelProps['onCellMouseLeave'] | DateRangePanelProps['onCellMouseLeave'];
+  onTimePickerChange: DatePanelProps['onTimePickerChange'] | DateRangePanelProps['onTimePickerChange'];
 }
 
 export default function PanelContent(props: PanelContentProps) {
@@ -75,7 +75,7 @@ export default function PanelContent(props: PanelContentProps) {
           data={tableData}
           timeValue={timeValue}
           firstDayOfWeek={firstDayOfWeek}
-          onCellClick={(date: Date) => onCellClick?.(date, { partial })}
+          onCellClick={(date: Date, { e }) => onCellClick?.(date, { e, partial })}
           onCellMouseEnter={(date: Date) => onCellMouseEnter?.(date, { partial })}
           onCellMouseLeave={onCellMouseLeave}
         />

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CalendarIcon } from 'tdesign-icons-react';
 import dayjs from 'dayjs';
 import classNames from 'classnames';
@@ -15,7 +15,7 @@ export default function useSingle(props: TdDatePickerProps) {
   const inputRef = useRef<HTMLInputElement>();
 
   const {
-    mode = 'month',
+    mode,
     value: valueFromProps,
     defaultValue: defaultValueFromProps,
     onChange: onChangeFromProps,
@@ -23,9 +23,8 @@ export default function useSingle(props: TdDatePickerProps) {
     suffixIcon,
     inputProps: inputPropsFromProps,
     popupProps: popupPropsFromProps,
-    allowInput = true,
-    clearable = true,
-    format = 'YYYY-MM-DD',
+    allowInput,
+    clearable,
     placeholder = globalDatePickerConfig.placeholder[mode],
     onBlur,
     onFocus,
@@ -33,120 +32,100 @@ export default function useSingle(props: TdDatePickerProps) {
   } = props;
 
   const [value, onChange] = useDefault(valueFromProps, defaultValueFromProps, onChangeFromProps);
-  const { isValidDate, timeFormat, formatDate, getFullFormat } = useFormat({ ...props, value });
-
-  if (value && !isValidDate(value)) console.error(`value: ${value} is invalid datetime;`);
+  const { isValidDate, formatDate, formatTime } = useFormat({
+    value,
+    mode,
+    format: props.format,
+    valueType: props.valueType,
+    enableTimePicker: props.enableTimePicker,
+  });
 
   const [popupVisible, setPopupVisible] = useState(false);
   const [isHoverCell, setIsHoverCell] = useState(false);
-  const [timeValue, setTimeValue] = useState(dayjs(value).format(timeFormat));
+  const [timeValue, setTimeValue] = useState(formatTime(value));
   const [month, setMonth] = useState(dayjs(value).month() || new Date().getMonth());
   const [year, setYear] = useState(dayjs(value).year() || new Date().getFullYear());
-
   // 未真正选中前可能不断变更输入框的内容
   const [inputValue, setInputValue] = useState(formatDate(value));
+  const [cacheValue, setCacheValue] = useState(formatDate(value)); // 缓存选中值，panel 点击时更改
 
   // input 设置
-  const inputProps = useMemo(
-    () => ({
-      ...inputPropsFromProps,
-      ref: inputRef,
-      clearable,
-      prefixIcon,
-      readonly: !allowInput,
-      placeholder,
-      suffixIcon: suffixIcon || <CalendarIcon />,
-      className: classNames({
-        [`${name}__input--placeholder`]: isHoverCell,
-      }),
-      onClear: ({ e }) => {
-        e.stopPropagation();
-        setPopupVisible(false);
-        onChange('', dayjs(''));
-      },
-      onBlur: (val: string, { e }) => {
-        onBlur?.({ value: val, e });
-        if (!isValidDate(val, format, true)) {
-          setInputValue(formatDate(value));
-        }
-      },
-      onFocus: (_: string, { e }) => {
-        onFocus?.({ value, e });
-      },
-      onChange: (val: string, { e }) => {
-        onInput?.({ input: val, value, e });
-
-        // 输入事件
-        setInputValue(val);
-
-        const fullFormat = getFullFormat();
-        // 跳过不符合格式化的输入框内容
-        if (!isValidDate(val, fullFormat, true)) return;
-        const newMonth = dayjs(val).month();
-        const newYear = dayjs(val).year();
-        const newTime = dayjs(val).format(timeFormat);
-        !Number.isNaN(newYear) && setYear(newYear);
-        !Number.isNaN(newMonth) && setMonth(newMonth);
-        !Number.isNaN(newTime) && setTimeValue(newTime);
-      },
-      onEnter: (val: string) => {
-        if (!isValidDate(val) && !isValidDate(value)) return;
-
-        setPopupVisible(false);
-        if (isValidDate(val, format, true)) {
-          onChange(formatDate(val, 'valueType') as DateValue, dayjs(val));
-        } else if (isValidDate(value)) {
-          setInputValue(formatDate(value));
-        } else {
-          setInputValue('');
-        }
-      },
+  const inputProps = {
+    ...inputPropsFromProps,
+    ref: inputRef,
+    clearable,
+    prefixIcon,
+    readonly: !allowInput,
+    placeholder,
+    suffixIcon: suffixIcon || <CalendarIcon />,
+    className: classNames({
+      [`${name}__input--placeholder`]: isHoverCell,
     }),
-    [
-      name,
-      allowInput,
-      suffixIcon,
-      clearable,
-      prefixIcon,
-      placeholder,
-      formatDate,
-      onBlur,
-      onInput,
-      onFocus,
-      onChange,
-      value,
-      format,
-      inputPropsFromProps,
-      isHoverCell,
-      getFullFormat,
-      isValidDate,
-      timeFormat,
-    ],
-  );
+    onClear: ({ e }) => {
+      e.stopPropagation();
+      setPopupVisible(false);
+      onChange('', dayjs(''));
+    },
+    onBlur: (val: string, { e }) => {
+      onBlur?.({ value: val, e });
+    },
+    onFocus: (_: string, { e }) => {
+      onFocus?.({ value, e });
+    },
+    onChange: (val: string, { e }) => {
+      onInput?.({ input: val, value, e });
+
+      // 输入事件
+      setInputValue(val);
+
+      // 跳过不符合格式化的输入框内容
+      if (!isValidDate(val)) return;
+      const newMonth = dayjs(val).month();
+      const newYear = dayjs(val).year();
+      const newTime = formatTime(val);
+      !Number.isNaN(newYear) && setYear(newYear);
+      !Number.isNaN(newMonth) && setMonth(newMonth);
+      !Number.isNaN(newTime) && setTimeValue(newTime);
+    },
+    onEnter: (val: string) => {
+      if (!isValidDate(val) && !isValidDate(value)) return;
+
+      setPopupVisible(false);
+      if (isValidDate(val)) {
+        onChange(formatDate(val, 'valueType') as DateValue, dayjs(val));
+      } else if (isValidDate(value)) {
+        setInputValue(formatDate(value));
+      } else {
+        setInputValue('');
+      }
+    },
+  };
 
   // popup 设置
-  const popupProps = useMemo(
-    () => ({
-      ...popupPropsFromProps,
-      expandAnimation: true,
-      overlayClassName: `${name}__panel-container`,
-      onVisibleChange: (visible: boolean) => {
-        setPopupVisible(visible);
-        if (!visible) {
-          setIsHoverCell(false);
-        }
-      },
-    }),
-    [name, popupPropsFromProps, setPopupVisible],
-  );
+  const popupProps = {
+    ...popupPropsFromProps,
+    expandAnimation: true,
+    overlayClassName: `${name}__panel-container`,
+    onVisibleChange: (visible: boolean) => {
+      setPopupVisible(visible);
+      if (!visible) {
+        setIsHoverCell(false);
+        setInputValue(formatDate(value));
+      }
+    },
+  };
 
   // 输入框响应 value 变化
   useEffect(() => {
-    if (!value) return setInputValue('');
-    if (!isValidDate(value, format, true)) return;
+    if (!value) {
+      setInputValue('');
+      return;
+    }
+    if (!isValidDate(value)) return;
 
     setInputValue(formatDate(value));
-  }, [value, format, formatDate, setInputValue]);
+    // eslint-disable-next-line
+  }, [value]);
 
   return {
     year,
@@ -158,6 +137,7 @@ export default function useSingle(props: TdDatePickerProps) {
     inputProps,
     popupProps,
     inputRef,
+    cacheValue,
     onChange,
     setYear,
     setMonth,
@@ -165,6 +145,6 @@ export default function useSingle(props: TdDatePickerProps) {
     setIsHoverCell,
     setInputValue,
     setPopupVisible,
-    formatDate,
+    setCacheValue,
   };
 }

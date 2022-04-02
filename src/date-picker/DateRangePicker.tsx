@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 // import { useLocaleReceiver } from '../locale/LocalReceiver';
@@ -8,6 +8,7 @@ import { TdDateRangePickerProps } from './type';
 import { RangeInputPopup } from '../range-input';
 import DateRangePanel from './panel/DateRangePanel';
 import useRange from './hooks/useRange';
+import useFormat from './hooks/useFormat';
 import { subtractMonth, addMonth, extractTimeObj } from '../_common/js/date-picker/utils-new';
 
 export interface DateRangePickerProps extends TdDateRangePickerProps, StyledProps {}
@@ -19,13 +20,12 @@ const DateRangePicker = forwardRef<HTMLDivElement, DateRangePickerProps>((props,
     className,
     style,
     disabled,
-    mode = 'month',
+    mode,
     enableTimePicker,
     disableDate,
     firstDayOfWeek = globalDatePickerConfig.firstDayOfWeek,
     presets,
     timePickerProps,
-    format = 'YYYY-MM-DD',
     onPick,
   } = props;
 
@@ -39,25 +39,43 @@ const DateRangePicker = forwardRef<HTMLDivElement, DateRangePickerProps>((props,
     month,
     timeValue,
     activeIndex,
-    // inputRef,
     setActiveIndex,
     onChange,
     setIsHoverCell,
     setInputValue,
     setPopupVisible,
     setTimeValue,
-    formatDate,
     setYear,
     setMonth,
-    isValidDate,
-    isFirstClick,
-    setIsFirstClick,
+    isFirstValueSelected,
+    setIsFirstValueSelected,
+    cacheValue,
+    setCacheValue,
   } = useRange(props);
+
+  const { formatTime, formatDate, isValidDate, format } = useFormat({
+    mode,
+    value,
+    format: props.format,
+    valueType: props.valueType,
+    enableTimePicker: props.enableTimePicker,
+  });
+
+  const [isSelected, setIsSelected] = useState(false);
+
+  useEffect(() => {
+    // 面板展开重置数据
+    if (popupVisible) {
+      setIsSelected(false);
+      setCacheValue(formatDate(value || []));
+      setTimeValue(formatTime(value || []));
+    }
+    // eslint-disable-next-line
+  }, [value, popupVisible]);
 
   // 日期 hover
   function onCellMouseEnter(date: Date) {
     setIsHoverCell(true);
-
     const nextValue = [...inputValue];
     nextValue[activeIndex] = formatDate(date);
     setInputValue(nextValue);
@@ -66,9 +84,7 @@ const DateRangePicker = forwardRef<HTMLDivElement, DateRangePickerProps>((props,
   // 日期 leave
   function onCellMouseLeave() {
     setIsHoverCell(false);
-    const nextValue = [...inputValue];
-    nextValue[activeIndex] = formatDate(value[activeIndex]);
-    setInputValue(nextValue);
+    setInputValue(cacheValue);
   }
 
   // 日期点击
@@ -76,24 +92,27 @@ const DateRangePicker = forwardRef<HTMLDivElement, DateRangePickerProps>((props,
     onPick?.(date, { e, partial });
 
     setIsHoverCell(false);
+    setIsSelected(true);
+
     const nextValue = [...inputValue];
     nextValue[activeIndex] = formatDate(date);
+    setCacheValue(nextValue);
     setInputValue(nextValue);
 
     if (enableTimePicker) return;
 
-    const notValidIndex = nextValue.findIndex((v) => !v || !isValidDate(v, format, true));
+    const notValidIndex = nextValue.findIndex((v) => !v || !isValidDate(v));
 
     // 首次点击不关闭、确保两端都有有效值并且无时间选择器时点击后自动关闭
-    if (notValidIndex === -1 && nextValue.length === 2 && !enableTimePicker && isFirstClick) {
-      setPopupVisible(false);
-      setIsFirstClick(false);
+    if (notValidIndex === -1 && nextValue.length === 2 && !enableTimePicker && isFirstValueSelected) {
       onChange(
         formatDate(nextValue, 'valueType'),
         nextValue.map((v) => dayjs(v)),
       );
+      setIsFirstValueSelected(false);
+      setPopupVisible(false);
     } else {
-      setIsFirstClick(true);
+      setIsFirstValueSelected(true);
       if (notValidIndex !== -1) {
         setActiveIndex(notValidIndex);
       } else {
@@ -133,28 +152,45 @@ const DateRangePicker = forwardRef<HTMLDivElement, DateRangePickerProps>((props,
     const nextTimeValue = [...timeValue];
     nextTimeValue[activeIndex] = val;
     setTimeValue(nextTimeValue);
+    setIsSelected(true);
 
     const { hours, minutes, seconds, milliseconds, meridiem } = extractTimeObj(val);
-    const currentDate = dayjs(inputValue, format)
-      .hour(hours + (/pm/i.test(meridiem) ? 12 : 0))
-      .minute(minutes)
-      .second(seconds)
-      .millisecond(milliseconds)
-      .toDate();
-    setInputValue(formatDate(currentDate));
+
+    const nextInputValue = [...inputValue];
+    const changedInputValue = inputValue[activeIndex];
+    const currentDate = !dayjs(changedInputValue, format).isValid() ? dayjs() : dayjs(changedInputValue, format);
+    // am pm 12小时制转化 24小时制
+    let nextHours = hours;
+    if (/am/i.test(meridiem) && nextHours === 12) nextHours -= 12;
+    if (/pm/i.test(meridiem) && nextHours < 12) nextHours += 12;
+
+    const nextDate = currentDate.hour(nextHours).minute(minutes).second(seconds).millisecond(milliseconds).toDate();
+    nextInputValue.splice(activeIndex, 1, nextDate);
+    setInputValue(formatDate(nextInputValue));
   }
 
   // 确定
   function onConfirmClick() {
-    setPopupVisible(false);
+    const nextValue = [...inputValue];
 
+    const notValidIndex = nextValue.findIndex((v) => !v || !isValidDate(v));
 
-
-    // if (isValidDate(inputValue, format, true)) {
-    //   onChange(formatDate(inputValue, 'valueType'), inputValue.map(v => dayjs(v)));
-    // } else {
-    //   setInputValue(formatDate(value));
-    // }
+    // 首次点击不关闭、确保两端都有有效值并且无时间选择器时点击后自动关闭
+    if (notValidIndex === -1 && nextValue.length === 2 && isFirstValueSelected) {
+      onChange(
+        formatDate(nextValue, 'valueType'),
+        nextValue.map((v) => dayjs(v)),
+      );
+      setIsFirstValueSelected(false);
+      setPopupVisible(false);
+    } else {
+      setIsFirstValueSelected(true);
+      if (notValidIndex !== -1) {
+        setActiveIndex(notValidIndex);
+      } else {
+        setActiveIndex(activeIndex ? 0 : 1);
+      }
+    }
   }
 
   // 预设
@@ -164,10 +200,13 @@ const DateRangePicker = forwardRef<HTMLDivElement, DateRangePickerProps>((props,
       presetValue = preset();
     }
     if (!Array.isArray(presetValue)) {
-      console.error(`preset: ${preset} 预设值必须是数组!`)
+      console.error(`preset: ${preset} 预设值必须是数组!`);
     } else {
+      onChange(
+        formatDate(presetValue, 'valueType'),
+        presetValue.map((p) => dayjs(p)),
+      );
       setPopupVisible(false);
-      onChange(formatDate(presetValue, 'valueType'), presetValue.map(p => dayjs(p)));
     }
   }
 
@@ -192,13 +231,14 @@ const DateRangePicker = forwardRef<HTMLDivElement, DateRangePickerProps>((props,
   }
 
   const panelProps = {
-    value,
+    value: cacheValue,
     year,
     month,
     mode,
     format,
     presets,
     timeValue,
+    isSelected,
     disableDate,
     firstDayOfWeek,
     timePickerProps,
@@ -213,9 +253,6 @@ const DateRangePicker = forwardRef<HTMLDivElement, DateRangePickerProps>((props,
     onYearChange,
     onMonthChange,
     onTimePickerChange,
-    // onClick: () => {
-    //   inputRef.current?.focus?.({ position: activeIndex ? 'second' : 'first' })
-    // },
   };
 
   return (
@@ -233,5 +270,12 @@ const DateRangePicker = forwardRef<HTMLDivElement, DateRangePickerProps>((props,
 });
 
 DateRangePicker.displayName = 'DateRangePicker';
+
+DateRangePicker.defaultProps = {
+  mode: 'date',
+  allowInput: false,
+  clearable: false,
+  presetsPlacement: 'bottom',
+};
 
 export default DateRangePicker;

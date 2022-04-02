@@ -9,6 +9,7 @@ interface DatePickerFooterProps extends Pick<TdDatePickerProps, 'enableTimePicke
   presets: TdDatePickerProps['presets'] | TdDateRangePickerProps['presets'];
   onPresetClick: Function;
   onConfirmClick: Function;
+  isSelected?: boolean;
 }
 
 const DatePickerFooter = (props: DatePickerFooterProps) => {
@@ -17,7 +18,7 @@ const DatePickerFooter = (props: DatePickerFooterProps) => {
 
   const { classPrefix } = useConfig();
 
-  const { enableTimePicker, onConfirmClick, presetsPlacement = 'bottom', presets, onPresetClick } = props;
+  const { enableTimePicker, onConfirmClick, presetsPlacement = 'bottom', presets, onPresetClick, isSelected } = props;
 
   const footerClass = classNames(
     `${classPrefix}-date-picker__footer`,
@@ -37,7 +38,7 @@ const DatePickerFooter = (props: DatePickerFooterProps) => {
         </div>
       }
       {enableTimePicker && (
-        <Button size="small" theme="primary" onClick={(e) => onConfirmClick({ e })}>
+        <Button disabled={!isSelected} size="small" theme="primary" onClick={(e) => onConfirmClick({ e })}>
           {confirmText}
         </Button>
       )}

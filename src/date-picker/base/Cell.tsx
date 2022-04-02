@@ -56,7 +56,11 @@ const DatePickerCell = (props: DatePickerCellProps) => {
     if (disabled) return;
     if (timeValue) {
       const { hours, minutes, seconds, milliseconds, meridiem } = extractTimeObj(timeValue);
-      value.setHours(hours + (/pm/i.test(meridiem) ? 12 : 0));
+      // am pm 12小时制转化 24小时制
+      let nextHours = hours;
+      if (/am/i.test(meridiem) && nextHours === 12) nextHours -= 12;
+      if (/pm/i.test(meridiem) && nextHours < 12) nextHours += 12;
+      value.setHours(nextHours);
       value.setMinutes(minutes);
       value.setSeconds(seconds);
       value.setMilliseconds(milliseconds);
@@ -68,7 +72,11 @@ const DatePickerCell = (props: DatePickerCellProps) => {
     if (disabled) return;
     if (timeValue) {
       const { hours, minutes, seconds, milliseconds, meridiem } = extractTimeObj(timeValue);
-      value.setHours(hours + (/pm/i.test(meridiem) ? 12 : 0));
+      // am pm 12小时制转化 24小时制
+      let nextHours = hours;
+      if (/am/i.test(meridiem) && nextHours === 12) nextHours -= 12;
+      if (/pm/i.test(meridiem) && nextHours < 12) nextHours += 12;
+      value.setHours(nextHours);
       value.setMinutes(minutes);
       value.setSeconds(seconds);
       value.setMilliseconds(milliseconds);

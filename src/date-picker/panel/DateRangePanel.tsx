@@ -15,8 +15,9 @@ export interface DateRangePanelProps extends TdDateRangePickerProps, StyledProps
   year?: number[];
   month?: number[];
   timeValue?: string[];
+  isSelected?: boolean;
   onClick?: (context: { e: React.MouseEvent<HTMLDivElement> }) => void;
-  onCellClick?: (date: Date, context: { partial: 'start' | 'end' }) => void;
+  onCellClick?: (date: Date, context: { e: React.MouseEvent<HTMLDivElement>; partial: 'start' | 'end' }) => void;
   onCellMouseEnter?: (date: Date, context: { partial: 'start' | 'end' }) => void;
   onCellMouseLeave?: (context: { e: React.MouseEvent<HTMLDivElement> }) => void;
   onJumperClick?: (flag: number, context: { partial: 'start' | 'end' }) => void;
@@ -35,16 +36,17 @@ const DateRangePanel = (props: DateRangePanelProps) => {
   const panelName = `${classPrefix}-date-range-picker__panel`;
   const {
     value,
-    mode = 'month',
+    mode,
     format,
     presets,
     enableTimePicker,
-    presetsPlacement = 'bottom',
+    presetsPlacement,
     disableDate: disableDateFromProps,
     firstDayOfWeek = globalDatePickerConfig.firstDayOfWeek,
 
     style,
     className,
+    isSelected,
     activeIndex,
     year,
     month,
@@ -105,6 +107,7 @@ const DateRangePanel = (props: DateRangePanelProps) => {
       {['top', 'left'].includes(presetsPlacement) ? (
         <ExtraContent
           presets={presets}
+          isSelected={isSelected}
           enableTimePicker={enableTimePicker}
           onPresetClick={onPresetClick}
           onConfirmClick={onConfirmClick}
@@ -148,6 +151,7 @@ const DateRangePanel = (props: DateRangePanelProps) => {
       {['bottom', 'right'].includes(presetsPlacement) ? (
         <ExtraContent
           presets={presets}
+          isSelected={isSelected}
           enableTimePicker={enableTimePicker}
           onPresetClick={onPresetClick}
           onConfirmClick={onConfirmClick}
@@ -159,5 +163,10 @@ const DateRangePanel = (props: DateRangePanelProps) => {
 };
 
 DateRangePanel.displayName = 'DateRangePanel';
+
+DateRangePanel.defaultProps = {
+  mode: 'date',
+  presetsPlacement: 'bottom',
+};
 
 export default DateRangePanel;

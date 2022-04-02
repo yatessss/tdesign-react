@@ -14,8 +14,9 @@ export interface DatePanelProps extends TdDatePickerProps, StyledProps {
   year?: number;
   month?: number;
   timeValue?: string;
+  isSelected?: boolean;
   onClick?: (context: { e: React.MouseEvent<HTMLDivElement> }) => void;
-  onCellClick?: (date: Date) => void;
+  onCellClick?: (date: Date, context: { e: React.MouseEvent<HTMLDivElement> }) => void;
   onCellMouseEnter?: (date: Date) => void;
   onCellMouseLeave?: (context: { e: React.MouseEvent<HTMLDivElement> }) => void;
   onJumperClick?: (flag: number) => void;
@@ -34,9 +35,9 @@ const DatePanel = (props: DatePanelProps) => {
   const panelName = `${classPrefix}-date-picker__panel`;
   const {
     value,
-    mode = 'month',
+    mode,
     format = 'YYYY-MM-DD',
-    presetsPlacement = 'bottom',
+    presetsPlacement,
     disableDate: disableDateFromProps,
     firstDayOfWeek = globalDatePickerConfig.firstDayOfWeek,
 
@@ -53,7 +54,7 @@ const DatePanel = (props: DatePanelProps) => {
     year,
     month,
     mode,
-    start: value ? dayjs(value).toDate() : undefined,
+    start: value ? dayjs(value, format).toDate() : undefined,
     firstDayOfWeek,
     ...disableDateOptions,
   });
@@ -94,5 +95,10 @@ const DatePanel = (props: DatePanelProps) => {
 };
 
 DatePanel.displayName = 'DatePanel';
+
+DatePanel.defaultProps = {
+  mode: 'date',
+  presetsPlacement: 'bottom',
+};
 
 export default DatePanel;
