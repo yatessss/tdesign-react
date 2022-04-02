@@ -33,7 +33,8 @@ const TimePickerPanel: FC<TimeRangePickerPanelProps> = (props) => {
   const { classPrefix } = useConfig();
 
   const [startTime, endTime] = value || [];
-  const panelClassName = `${classPrefix}-time-picker__panel`;
+
+  const panelClassName = `${classPrefix}-time-picker__panel-section`;
 
   const handlePanelValueChange = (value: string, index: number) => {
     if (index === 0) {
@@ -53,7 +54,7 @@ const TimePickerPanel: FC<TimeRangePickerPanelProps> = (props) => {
 
   return (
     <div className={classNames(panelClassName)}>
-      <div className={`${panelClassName}-section-body`}>
+      <div className={`${panelClassName}-body`}>
         <SinglePanel
           {...props}
           steps={steps}
@@ -70,7 +71,7 @@ const TimePickerPanel: FC<TimeRangePickerPanelProps> = (props) => {
         />
       </div>
       {isFooterDisplay ? (
-        <div className={`${panelClassName}-section-footer`}>
+        <div className={`${panelClassName}-footer`}>
           <Button
             theme="primary"
             variant="base"

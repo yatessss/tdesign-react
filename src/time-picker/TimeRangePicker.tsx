@@ -62,9 +62,6 @@ const TimeRangePicker: FC<TimeRangePickerProps> = (props) => {
         disabled={disabled}
         popupVisible={isPanelShowed}
         onPopupVisibleChange={handleShowPopup}
-        popupProps={{
-          overlayClassName: `${classPrefix}-time-picker__panel-section`,
-        }}
         rangeInputProps={{
           clearable,
           className: inputClasses,

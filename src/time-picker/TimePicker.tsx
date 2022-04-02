@@ -12,6 +12,7 @@ import noop from '../_util/noop';
 import SelectInput from '../select-input';
 import TimeRangePicker from './TimeRangePicker';
 import TimePickerPanel from './panel/TimePickerPanel';
+import TimeRangePickerPanel from './panel/TimePickerRangePanel';
 
 import { useTimePickerTextConfig } from './const';
 
@@ -91,11 +92,11 @@ const TimePicker = forwardRefWithStatics(
           className={inputClasses}
           suffixIcon={<TimeIcon />}
           popupVisible={isPanelShowed}
-          defaultInputValue={currentValue}
           onInputChange={handleInputChange}
           onPopupVisibleChange={handleShowPopup}
           placeholder={!value ? placeholder : undefined}
           value={isPanelShowed ? currentValue : value ?? undefined}
+          inputValue={isPanelShowed ? currentValue : value ?? undefined}
           panel={
             <TimePickerPanel
               steps={steps}
@@ -118,6 +119,8 @@ const TimePicker = forwardRefWithStatics(
   {
     displayName: 'TimePicker',
     TimeRangePicker,
+    TimePickerPanel,
+    TimeRangePickerPanel,
   },
 );
 
