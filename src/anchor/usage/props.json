@@ -3,7 +3,7 @@
     "name": "size",
     "type": "enum",
     "defaultValue": "medium",
-    "enum": [
+    "options": [
       {
         "label": "small ",
         "value": "small "

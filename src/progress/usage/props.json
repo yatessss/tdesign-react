@@ -3,13 +3,13 @@
     "name": "label",
     "type": "String",
     "defaultValue": "true",
-    "enum": []
+    "options": []
   },
   {
     "name": "theme",
     "type": "enum",
     "defaultValue": "line",
-    "enum": [
+    "options": [
       {
         "label": "line",
         "value": "line"

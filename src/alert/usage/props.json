@@ -3,13 +3,13 @@
     "name": "close",
     "type": "String",
     "defaultValue": "false",
-    "enum": []
+    "options": []
   },
   {
     "name": "theme",
     "type": "enum",
     "defaultValue": "info",
-    "enum": [
+    "options": [
       {
         "label": "success",
         "value": "success"

@@ -6,12 +6,6 @@
     "options": []
   },
   {
-    "name": "bordered",
-    "type": "Boolean",
-    "defaultValue": false,
-    "options": []
-  },
-  {
     "name": "borderless",
     "type": "Boolean",
     "defaultValue": false,
@@ -19,12 +13,6 @@
   },
   {
     "name": "clearable",
-    "type": "Boolean",
-    "defaultValue": false,
-    "options": []
-  },
-  {
-    "name": "creatable",
     "type": "Boolean",
     "defaultValue": false,
     "options": []
@@ -66,33 +54,21 @@
     "options": []
   },
   {
-    "name": "reserveKeyword",
-    "type": "Boolean",
-    "defaultValue": false,
-    "options": []
-  },
-  {
-    "name": "showArrow",
-    "type": "Boolean",
-    "defaultValue": false,
-    "options": []
-  },
-  {
     "name": "size",
     "type": "enum",
     "defaultValue": "medium",
     "options": [
       {
-        "label": "small ",
-        "value": "small "
+        "label": "small",
+        "value": "small"
       },
       {
-        "label": " medium ",
-        "value": " medium "
+        "label": "medium",
+        "value": "medium"
       },
       {
-        "label": " large",
-        "value": " large"
+        "label": "large",
+        "value": "large"
       }
     ]
   },

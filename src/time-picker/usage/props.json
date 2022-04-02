@@ -1,12 +1,24 @@
 [
   {
+    "name": "allowInput",
+    "type": "Boolean",
+    "defaultValue": false,
+    "options": []
+  },
+  {
+    "name": "clearable",
+    "type": "Boolean",
+    "defaultValue": false,
+    "options": []
+  },
+  {
     "name": "disabled",
     "type": "Boolean",
     "defaultValue": false,
     "options": []
   },
   {
-    "name": "loading",
+    "name": "hideDisabledTime",
     "type": "Boolean",
     "defaultValue": false,
     "options": []
@@ -29,11 +41,5 @@
         "value": "large"
       }
     ]
-  },
-  {
-    "name": "value",
-    "type": "String",
-    "defaultValue": "undefined",
-    "options": []
   }
 ]

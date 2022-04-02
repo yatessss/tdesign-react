@@ -2,37 +2,37 @@
   {
     "name": "fullscreen",
     "type": "Boolean",
-    "defaultValue": "false",
-    "enum": []
+    "defaultValue": false,
+    "options": []
   },
   {
     "name": "indicator",
     "type": "Boolean",
-    "defaultValue": "true",
-    "enum": []
+    "defaultValue": false,
+    "options": []
   },
   {
     "name": "inheritColor",
     "type": "Boolean",
-    "defaultValue": "false",
-    "enum": []
+    "defaultValue": false,
+    "options": []
   },
   {
     "name": "loading",
     "type": "Boolean",
-    "defaultValue": "true",
-    "enum": []
+    "defaultValue": false,
+    "options": []
   },
   {
     "name": "preventScrollThrough",
     "type": "Boolean",
-    "defaultValue": "true",
-    "enum": []
+    "defaultValue": false,
+    "options": []
   },
   {
     "name": "showOverlay",
     "type": "Boolean",
-    "defaultValue": "true",
-    "enum": []
+    "defaultValue": false,
+    "options": []
   }
 ]
