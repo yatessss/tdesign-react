@@ -1,12 +1,22 @@
 [
   {
+    "name": "columnControllerVisible",
+    "type": "Boolean",
+    "defaultValue": false,
+    "options": []
+  },
+  {
     "name": "dragSort",
     "type": "enum",
-    "defaultValue": "drag-col",
+    "defaultValue": "col",
     "options": [
       {
         "label": "row",
         "value": "row"
+      },
+      {
+        "label": "col",
+        "value": "col"
       },
       {
         "label": "drag-col",
